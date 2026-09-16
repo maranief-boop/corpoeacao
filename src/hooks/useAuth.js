@@ -86,6 +86,11 @@ export function useAuth() {
     return !!session
   }, [])
 
+  // Limpa a mensagem de erro
+  const limparErro = useCallback(() => {
+    setErro(null)
+  }, [])
+
   return {
     usuario,
     carregando,
@@ -94,6 +99,7 @@ export function useAuth() {
     cadastrar,
     logout,
     temUsuarios,
+    limparErro,
     autenticado: !!usuario
   }
 }

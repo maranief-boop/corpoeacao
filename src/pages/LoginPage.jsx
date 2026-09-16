@@ -10,7 +10,7 @@ import { Button, Input, Label, Card } from '../components/ui'
 export default function LoginPage({ auth }) {
   const { config } = useApp()
   const { toast } = useToast()
-  const { login, cadastrar, erro } = auth
+  const { login, cadastrar, erro, limparErro } = auth
 
   const [modo, setModo] = useState('login') // 'login' | 'cadastro'
   const [email, setEmail] = useState('')
@@ -158,7 +158,7 @@ export default function LoginPage({ auth }) {
               type="button"
               onClick={() => {
                 setModo(modo === 'login' ? 'cadastro' : 'login')
-                setErro(null)
+                limparErro?.()
               }}
               className="text-sm font-medium text-primary-600 transition hover:text-primary-700 dark:text-primary-400"
             >
