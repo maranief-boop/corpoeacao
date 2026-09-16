@@ -5,7 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:site": "vite --open index.html",
+    "dev:admin": "vite --open admin.html",
     "build": "vite build",
+    "build:site": "vite build --config vite.config.js",
+    "build:admin": "vite build --config vite.config.js",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -20,6 +24,7 @@
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.41",
     "tailwindcss": "^3.4.10",
+    "terser": "^5.51.2",
     "vite": "^5.4.2"
   }
 }
