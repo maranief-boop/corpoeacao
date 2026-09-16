@@ -11,8 +11,11 @@ import { StatusBadge } from '../components/StatusBadge'
 import FormAluno from '../components/FormAluno'
 import ModalHistorico from '../components/ModalHistorico'
 import ModalAvaliacoes from '../components/ModalAvaliacoes'
+import { Paginacao } from '../components/Paginacao'
 import { Button, Input, Card, EstadoVazio, Spinner } from '../components/ui'
 import { formatarMoeda, formatarData, iniciais } from '../utils/format'
+
+const ITENS_POR_PAGINA = 20
 
 export default function Alunos() {
   const { alunos, carregando, criar, atualizar, remover } = useAlunos()
@@ -34,6 +37,12 @@ export default function Alunos() {
         (a.telefone || '').includes(termo)
     )
   }, [alunos, busca])
+
+  // Paginação
+  const [pagina, setPagina] = useState(1)
+  const totalPaginas = Math.ceil(filtrados.length / ITENS_POR_PAGINA)
+  const inicio = (pagina - 1) * ITENS_POR_PAGINA
+  const filtradosPaginados = filtrados.slice(inicio, inicio + ITENS_POR_PAGINA)
 
   const abrirNovo = () => {
     setAlunoEditando(null)
@@ -125,7 +134,7 @@ export default function Alunos() {
       ) : (
         <Card className="overflow-hidden">
           <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
-            {filtrados.map((aluno) => (
+            {filtradosPaginados.map((aluno) => (
               <li
                 key={aluno.id}
                 className="flex items-center gap-3 px-4 py-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
@@ -197,6 +206,15 @@ export default function Alunos() {
               </li>
             ))}
           </ul>
+          {totalPaginas > 1 && (
+            <div className="border-t border-zinc-200 px-4 py-3 dark:border-zinc-800">
+              <Paginacao
+                paginaAtual={pagina}
+                totalPaginas={totalPaginas}
+                onMudarPagina={setPagina}
+              />
+            </div>
+          )}
         </Card>
       )}
 

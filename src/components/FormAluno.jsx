@@ -4,11 +4,13 @@
 import { useState } from 'react'
 import { Button, Input, Label, Select } from './ui'
 import { paraInputDate } from '../utils/format'
+import { Eye, EyeOff } from 'lucide-react'
 
 const ALUNO_VAZIO = {
   nome: '',
   telefone: '',
   cpf: '',
+  pin: '',
   plano_valor: '',
   data_vencimento: '',
   status_pagamento: 'em_dia'
@@ -21,11 +23,13 @@ export default function FormAluno({ inicial = null, salvando, onSalvar, onCancel
           ...ALUNO_VAZIO,
           ...inicial,
           plano_valor: inicial.plano_valor != null ? String(inicial.plano_valor) : '',
-          data_vencimento: paraInputDate(inicial.data_vencimento)
+          data_vencimento: paraInputDate(inicial.data_vencimento),
+          pin: inicial.pin || ''
         }
       : ALUNO_VAZIO
   )
   const [erros, setErros] = useState({})
+  const [mostrarPin, setMostrarPin] = useState(false)
 
   const set = (campo, valor) => setForm((f) => ({ ...f, [campo]: valor }))
 
@@ -34,6 +38,8 @@ export default function FormAluno({ inicial = null, salvando, onSalvar, onCancel
     if (!form.nome.trim()) e.nome = 'Informe o nome do aluno'
     if (form.plano_valor === '' || Number(form.plano_valor) < 0)
       e.plano_valor = 'Valor inválido'
+    if (form.pin && form.pin.length < 4)
+      e.pin = 'O PIN deve ter pelo menos 4 dígitos'
     setErros(e)
     return Object.keys(e).length === 0
   }
@@ -45,6 +51,7 @@ export default function FormAluno({ inicial = null, salvando, onSalvar, onCancel
       nome: form.nome.trim(),
       telefone: form.telefone.trim(),
       cpf: form.cpf.trim(),
+      pin: form.pin.trim() || null,
       plano_valor: Number(form.plano_valor || 0),
       data_vencimento: form.data_vencimento || null,
       status_pagamento: form.status_pagamento
@@ -88,6 +95,33 @@ export default function FormAluno({ inicial = null, salvando, onSalvar, onCancel
             inputMode="numeric"
           />
         </div>
+      </div>
+
+      <div>
+        <Label>PIN de Acesso (Portal do Aluno)</Label>
+        <div className="relative">
+          <Input
+            type={mostrarPin ? 'text' : 'password'}
+            value={form.pin}
+            onChange={(e) => set('pin', e.target.value.replace(/\D/g, '').slice(0, 8))}
+            placeholder="Mínimo 4 dígitos (opcional)"
+            inputMode="numeric"
+            maxLength={8}
+            className="pr-9"
+          />
+          <button
+            type="button"
+            onClick={() => setMostrarPin(!mostrarPin)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 transition hover:text-zinc-600 dark:hover:text-zinc-300"
+            tabIndex={-1}
+          >
+            {mostrarPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
+        <p className="mt-1 text-xs text-zinc-400">
+          O aluno usará este PIN para acessar o Portal. Se deixar em branco, o acesso será direto.
+        </p>
+        {campoErro('pin')}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">

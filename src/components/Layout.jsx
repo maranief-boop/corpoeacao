@@ -17,7 +17,8 @@ import {
   Loader2,
   User,
   Filter,
-  Globe
+  Globe,
+  LogOut
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 
@@ -74,7 +75,7 @@ function Logo({ tamanho = 'h-9 w-9' }) {
   )
 }
 
-export default function Layout() {
+export default function Layout({ auth }) {
   const { config, carregando, tema, setTema } = useApp()
   const [tituloPagina, setTituloPagina] = useState('Início')
   const localizacao = useLocation()
@@ -199,6 +200,16 @@ export default function Layout() {
             <Settings className="h-5 w-5" />
             Configurações
           </NavLink>
+          {auth?.logout && (
+            <button
+              onClick={auth.logout}
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
+              title="Sair do painel"
+            >
+              <LogOut className="h-5 w-5" />
+              Sair
+            </button>
+          )}
         </div>
       </aside>
 
@@ -244,6 +255,15 @@ export default function Layout() {
               >
                 <Settings className="h-5 w-5" />
               </NavLink>
+              {auth?.logout && (
+                <button
+                  onClick={auth.logout}
+                  className="rounded-lg p-2 text-red-600 transition hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
+                  title="Sair"
+                >
+                  <LogOut className="h-5 w-5" />
+                </button>
+              )}
             </div>
           </div>
         </header>

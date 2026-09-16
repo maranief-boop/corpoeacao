@@ -15,7 +15,6 @@ import {
   Star,
   MapPin,
   Phone,
-  Mail,
   Calculator,
   CheckCircle2,
   ArrowDown,
@@ -36,8 +35,9 @@ import { useApp } from '../context/AppContext'
 import { abrirWhatsApp } from '../utils/whatsapp'
 import { dataParaInput } from '../utils/format'
 import fundoAcademia from '../assets/fundo.png'
+import logoAcademia from '../assets/logo.png'
 
-const HORARIOS = ['06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00']
+const HORARIOS = ['07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00']
 
 const NAV = [
   { id: 'modalidades', rotulo: 'Modalidades' },
@@ -64,7 +64,7 @@ export default function SiteInstitucional() {
   const { criar } = useLeads()
   const { toast } = useToast()
   const { config } = useApp()
-  const nomeAcademia = config.nome_academia || 'IronFit Andradina'
+  const nomeAcademia = config.nome_academia || 'Academia Corpo e Ação'
 
   const [menuAberto, setMenuAberto] = useState(false)
   const [modalLead, setModalLead] = useState(false)
@@ -141,9 +141,13 @@ export default function SiteInstitucional() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="flex items-center gap-2 text-lg font-extrabold tracking-tight"
+            className="flex items-center gap-3 text-lg font-extrabold tracking-tight"
           >
-            <Dumbbell className="h-5 w-5 text-orange-500" />
+            <img
+              src={logoAcademia}
+              alt={nomeAcademia}
+              className="h-14 w-14 rounded-2xl bg-white object-cover p-1 ring-2 ring-white/30 shadow-lg"
+            />
             <span className="text-white">{nomeAcademia}</span>
           </button>
 
@@ -152,14 +156,14 @@ export default function SiteInstitucional() {
               <button
                 key={n.id}
                 onClick={() => rolarPara(n.id)}
-                className="text-gray-300 transition-colors hover:text-orange-400"
+                className="text-gray-300 transition-colors hover:text-emerald-300"
               >
                 {n.rotulo}
               </button>
             ))}
             <button
               onClick={abrirLead}
-              className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-orange-500/30 transition hover:bg-orange-600"
+              className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-600"
             >
               Agende sua Aula
             </button>
@@ -183,14 +187,14 @@ export default function SiteInstitucional() {
                   setMenuAberto(false)
                   rolarPara(n.id)
                 }}
-                className="py-1 text-left text-gray-300 hover:text-orange-400"
+                className="py-1 text-left text-gray-300 hover:text-emerald-300"
               >
                 {n.rotulo}
               </button>
             ))}
             <button
               onClick={abrirLead}
-              className="mt-1 rounded-lg bg-orange-500 py-2.5 font-bold text-white transition hover:bg-orange-600"
+              className="mt-1 rounded-lg bg-emerald-500 py-2.5 font-bold text-white transition hover:bg-emerald-600"
             >
               Agende sua Aula Experimental
             </button>
@@ -206,19 +210,19 @@ export default function SiteInstitucional() {
       >
         <div className="absolute inset-0 bg-black/70" />
         <div className="absolute inset-0 opacity-5">
-          <div className="absolute left-10 top-20 h-72 w-72 rounded-full bg-orange-500 blur-[120px]" />
-          <div className="absolute bottom-20 right-10 h-96 w-96 rounded-full bg-orange-600 blur-[150px]" />
+          <div className="absolute left-10 top-20 h-72 w-72 rounded-full bg-emerald-500 blur-[120px]" />
+          <div className="absolute bottom-20 right-10 h-96 w-96 rounded-full bg-emerald-600 blur-[150px]" />
         </div>
         <div className="relative z-10 mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
-            <span className="mb-6 inline-block rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-1.5 text-xs font-semibold text-orange-400">
-              <MapPin className="mr-1 inline h-3 w-3" /> Andradina-SP
+            <span className="mb-6 inline-block rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-semibold text-emerald-300">
+              <MapPin className="mr-1 inline h-3 w-3" /> Mirandópolis-SP
             </span>
             <h1 className="mb-6 text-4xl font-extrabold leading-tight text-white sm:text-5xl lg:text-6xl">
               Transforme seu corpo e sua saúde
               <br />
-              <span className="bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent">
-                no coração de Andradina
+              <span className="bg-gradient-to-r from-emerald-400 to-lime-400 bg-clip-text text-transparent">
+                no coração de Mirandópolis
               </span>
             </h1>
             <p className="mb-8 max-w-2xl text-lg leading-relaxed text-gray-400 sm:text-xl">
@@ -229,29 +233,29 @@ export default function SiteInstitucional() {
             <div className="flex flex-col gap-4 sm:flex-row">
               <button
                 onClick={abrirLead}
-                className="inline-flex items-center justify-center gap-3 rounded-xl bg-orange-500 px-8 py-4 text-lg font-bold text-white shadow-xl shadow-orange-500/30 transition hover:bg-orange-600 hover:shadow-orange-500/50"
+                className="inline-flex items-center justify-center gap-3 rounded-xl bg-emerald-500 px-8 py-4 text-lg font-bold text-white shadow-xl shadow-emerald-500/30 transition hover:bg-emerald-600 hover:shadow-emerald-500/50"
               >
                 <MessageCircle className="h-5 w-5" /> Agende sua Aula Experimental
               </button>
               <button
                 onClick={() => rolarPara('modalidades')}
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-600 px-8 py-4 text-lg font-medium text-gray-300 transition hover:border-orange-400 hover:text-orange-400"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-600 px-8 py-4 text-lg font-medium text-gray-300 transition hover:border-emerald-400 hover:text-emerald-300"
               >
                 Ver Modalidades <ArrowDown className="h-4 w-4" />
               </button>
             </div>
             <div className="mt-12 flex flex-wrap gap-6 text-sm text-gray-500">
               <span>
-                <CheckCircle2 className="mr-1 inline h-4 w-4 text-orange-500" /> 12+
-                anos de experiência
+                <CheckCircle2 className="mr-1 inline h-4 w-4 text-emerald-400" /> Seg a
+                Sex · 07h às 20h
               </span>
               <span>
-                <CheckCircle2 className="mr-1 inline h-4 w-4 text-orange-500" /> +1.200
-                alunos ativos
+                <CheckCircle2 className="mr-1 inline h-4 w-4 text-emerald-400" /> Aula
+                experimental gratuita
               </span>
               <span>
-                <CheckCircle2 className="mr-1 inline h-4 w-4 text-orange-500" /> Nota
-                4.9 no Google
+                <CheckCircle2 className="mr-1 inline h-4 w-4 text-emerald-400" /> Ambiente
+                climatizado
               </span>
             </div>
           </div>
@@ -262,7 +266,7 @@ export default function SiteInstitucional() {
       <section id="modalidades" className="bg-[#0f0f0f] py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-14 text-center">
-            <span className="text-sm font-semibold uppercase tracking-widest text-orange-500">
+            <span className="text-sm font-semibold uppercase tracking-widest text-emerald-400">
               Nossas Modalidades
             </span>
             <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl">
@@ -298,9 +302,9 @@ export default function SiteInstitucional() {
             ].map((m) => (
               <div
                 key={m.titulo}
-                className="rounded-2xl border border-gray-800 bg-[#1a1a1a] p-8 text-center transition hover:-translate-y-1 hover:border-orange-500/40"
+                className="rounded-2xl border border-gray-800 bg-[#1a1a1a] p-8 text-center transition hover:-translate-y-1 hover:border-emerald-500/40"
               >
-                <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-orange-500/10 text-3xl text-orange-500">
+                <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 text-3xl text-emerald-400">
                   <m.icone className="h-7 w-7" />
                 </div>
                 <h3 className="mb-3 text-xl font-bold text-white">{m.titulo}</h3>
@@ -308,7 +312,7 @@ export default function SiteInstitucional() {
                 <ul className="space-y-1.5 text-xs text-gray-500">
                   {m.itens.map((i) => (
                     <li key={i}>
-                      <CheckCircle2 className="mr-1.5 inline h-3.5 w-3.5 text-orange-500" />
+                      <CheckCircle2 className="mr-1.5 inline h-3.5 w-3.5 text-emerald-400" />
                       {i}
                     </li>
                   ))}
@@ -323,7 +327,7 @@ export default function SiteInstitucional() {
       <section id="estrutura" className="bg-[#0a0a0a] py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-14 text-center">
-            <span className="text-sm font-semibold uppercase tracking-widest text-orange-500">
+            <span className="text-sm font-semibold uppercase tracking-widest text-emerald-400">
               Nossa Estrutura
             </span>
             <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl">
@@ -339,9 +343,9 @@ export default function SiteInstitucional() {
             ].map((e) => (
               <div
                 key={e.titulo}
-                className="rounded-xl border border-gray-800 bg-[#1a1a1a] p-6 text-center transition hover:-translate-y-1 hover:border-orange-500/40"
+                className="rounded-xl border border-gray-800 bg-[#1a1a1a] p-6 text-center transition hover:-translate-y-1 hover:border-emerald-500/40"
               >
-                <e.icone className="mb-3 h-8 w-8 text-orange-500" />
+                <e.icone className="mb-3 h-8 w-8 text-emerald-400" />
                 <h3 className="mb-1 text-sm font-bold text-white">{e.titulo}</h3>
                 <p className="text-xs text-gray-500">{e.texto}</p>
               </div>
@@ -354,7 +358,7 @@ export default function SiteInstitucional() {
       <section id="depoimentos" className="bg-[#0f0f0f] py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-14 text-center">
-            <span className="text-sm font-semibold uppercase tracking-widest text-orange-500">
+            <span className="text-sm font-semibold uppercase tracking-widest text-emerald-400">
               Depoimentos
             </span>
             <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl">
@@ -365,7 +369,7 @@ export default function SiteInstitucional() {
             {[
               {
                 texto:
-                  '"Melhor academia de Andradina! Em 3 meses já vi resultados incríveis. Os professores são muito atenciosos."',
+                  '"Melhor academia de Mirandópolis! Em 3 meses já vi resultados incríveis. Os professores são muito atenciosos."',
                 iniciais: 'CL',
                 nome: 'Carlos Lima',
                 periodo: 'Aluno há 8 meses'
@@ -387,12 +391,12 @@ export default function SiteInstitucional() {
             ].map((d) => (
               <div
                 key={d.nome}
-                className="rounded-2xl border border-gray-800 bg-[#1a1a1a] p-6 transition hover:-translate-y-1 hover:border-orange-500/40"
+                className="rounded-2xl border border-gray-800 bg-[#1a1a1a] p-6 transition hover:-translate-y-1 hover:border-emerald-500/40"
               >
                 <Estrelas />
                 <p className="mb-4 text-sm leading-relaxed text-gray-300">{d.texto}</p>
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/20 text-sm font-bold text-orange-500">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/20 text-sm font-bold text-emerald-400">
                     {d.iniciais}
                   </div>
                   <div>
@@ -410,7 +414,7 @@ export default function SiteInstitucional() {
       <section id="calculadora" className="bg-[#0a0a0a] py-20">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
-            <span className="text-sm font-semibold uppercase tracking-widest text-orange-500">
+            <span className="text-sm font-semibold uppercase tracking-widest text-emerald-400">
               Ferramenta Interativa
             </span>
             <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl">
@@ -432,7 +436,7 @@ export default function SiteInstitucional() {
                   min={100}
                   max={250}
                   onChange={(e) => setAltura(Number(e.target.value))}
-                  className="w-full rounded-xl border border-gray-700 bg-[#1f2937] px-4 py-3 text-white outline-none transition focus:border-orange-500"
+                  className="w-full rounded-xl border border-gray-700 bg-[#1f2937] px-4 py-3 text-white outline-none transition focus:border-emerald-500"
                 />
               </div>
               <div>
@@ -445,7 +449,7 @@ export default function SiteInstitucional() {
                   min={30}
                   max={250}
                   onChange={(e) => setPeso(Number(e.target.value))}
-                  className="w-full rounded-xl border border-gray-700 bg-[#1f2937] px-4 py-3 text-white outline-none transition focus:border-orange-500"
+                  className="w-full rounded-xl border border-gray-700 bg-[#1f2937] px-4 py-3 text-white outline-none transition focus:border-emerald-500"
                 />
               </div>
             </div>
@@ -459,12 +463,12 @@ export default function SiteInstitucional() {
                 max={80}
                 value={idade}
                 onChange={(e) => setIdade(Number(e.target.value))}
-                className="w-full accent-orange-500"
+                className="w-full accent-emerald-500"
               />
             </div>
             <button
               onClick={calcularImc}
-              className="w-full rounded-xl bg-orange-500 py-3.5 text-lg font-bold text-white shadow-lg shadow-orange-500/30 transition hover:bg-orange-600"
+              className="w-full rounded-xl bg-emerald-500 py-3.5 text-lg font-bold text-white shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-600"
             >
               <Calculator className="mr-2 inline h-5 w-5" /> Calcular IMC
             </button>
@@ -475,7 +479,7 @@ export default function SiteInstitucional() {
                   <p className="mt-1 text-4xl font-extrabold text-white">
                     {resultadoImc.imc}
                   </p>
-                  <p className="mt-1 font-semibold text-orange-400">
+                  <p className="mt-1 font-semibold text-emerald-300">
                     {resultadoImc.classificacao}
                   </p>
                   <p className="mt-3 text-sm text-gray-400">
@@ -484,7 +488,7 @@ export default function SiteInstitucional() {
                 </div>
                 <button
                   onClick={abrirLead}
-                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-yellow-500 py-3.5 text-lg font-bold text-white shadow-lg shadow-orange-500/30 transition hover:from-orange-600 hover:to-yellow-600"
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-lime-500 py-3.5 text-lg font-bold text-white shadow-lg shadow-emerald-500/30 transition hover:from-emerald-600 hover:to-lime-600"
                 >
                   <MessageCircle className="h-5 w-5" /> Quero minha Aula Experimental
                 </button>
@@ -498,7 +502,7 @@ export default function SiteInstitucional() {
       <section className="bg-[#0f0f0f] py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-10 text-center">
-            <span className="text-sm font-semibold uppercase tracking-widest text-orange-500">
+            <span className="text-sm font-semibold uppercase tracking-widest text-emerald-400">
               Onde Estamos
             </span>
             <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl">
@@ -507,8 +511,8 @@ export default function SiteInstitucional() {
           </div>
           <div className="overflow-hidden rounded-2xl border border-gray-800 shadow-xl">
             <iframe
-              title="Mapa - Andradina SP"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d237849.04191861405!2d-51.38965369327448!3d-20.898933685717724!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x949a3ff3966bb5a7%3A0xc3c3282dc8675713!2sAndradina%2C%20SP!5e0!3m2!1spt-BR!2sbr!4v1744416000000!5m2!1spt-BR!2sbr"
+              title="Mapa - Academia Corpo e Ação, Mirandópolis SP"
+              src="https://maps.google.com/maps?q=R.%20Rui%20Barbosa%2C%20603%20-%20Centro%2C%20Mirand%C3%B3polis%20-%20SP%2C%2016800-000&t=&z=17&ie=UTF8&iwloc=&output=embed"
               width="100%"
               height="380"
               style={{ border: 0 }}
@@ -525,12 +529,16 @@ export default function SiteInstitucional() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 grid gap-10 md:grid-cols-4">
             <div>
-              <div className="mb-4 flex items-center gap-2 text-lg font-extrabold tracking-tight">
-                <Dumbbell className="h-5 w-5 text-orange-500" />
+              <div className="mb-4 flex items-center gap-3 text-lg font-extrabold tracking-tight">
+                <img
+                  src={logoAcademia}
+                  alt={nomeAcademia}
+                  className="h-14 w-14 rounded-2xl bg-white object-cover p-1 ring-2 ring-white/30 shadow-lg"
+                />
                 <span className="text-white">{nomeAcademia}</span>
               </div>
               <p className="text-sm leading-relaxed text-gray-500">
-                Sua academia de referência em Andradina-SP. Transformando vidas
+                Sua academia de referência em Mirandópolis-SP. Transformando vidas
                 através do movimento.
               </p>
               <div className="mt-5 flex gap-3">
@@ -543,7 +551,7 @@ export default function SiteInstitucional() {
                   <a
                     key={s.rotulo}
                     href="#"
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-800 text-gray-400 transition hover:bg-orange-500 hover:text-white"
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-800 text-gray-400 transition hover:bg-emerald-500 hover:text-white"
                     aria-label={s.rotulo}
                   >
                     <s.icone className="h-4 w-4" />
@@ -558,7 +566,7 @@ export default function SiteInstitucional() {
                   <li key={m}>
                     <button
                       onClick={() => rolarPara('modalidades')}
-                      className="transition-colors hover:text-orange-400"
+                      className="transition-colors hover:text-emerald-300"
                     >
                       {m}
                     </button>
@@ -570,15 +578,15 @@ export default function SiteInstitucional() {
               <h4 className="mb-4 font-bold text-white">Horários</h4>
               <ul className="space-y-2.5 text-sm text-gray-500">
                 <li>
-                  <Clock className="mr-1 inline h-3.5 w-3.5 text-orange-500" />
-                  <span className="text-gray-400">Seg a Sex:</span> 06h - 22h
+                  <Clock className="mr-1 inline h-3.5 w-3.5 text-emerald-400" />
+                  <span className="text-gray-400">Seg a Sex:</span> 07h - 20h
                 </li>
                 <li>
-                  <Clock className="mr-1 inline h-3.5 w-3.5 text-orange-500" />
-                  <span className="text-gray-400">Sábado:</span> 08h - 14h
+                  <Clock className="mr-1 inline h-3.5 w-3.5 text-emerald-400" />
+                  <span className="text-gray-400">Sábado:</span> Fechado
                 </li>
                 <li>
-                  <Clock className="mr-1 inline h-3.5 w-3.5 text-orange-500" />
+                  <Clock className="mr-1 inline h-3.5 w-3.5 text-emerald-400" />
                   <span className="text-gray-400">Domingo:</span> Fechado
                 </li>
                 <li className="pt-2 text-xs text-gray-600">
@@ -589,20 +597,16 @@ export default function SiteInstitucional() {
             <div>
               <h4 className="mb-4 font-bold text-white">Endereço</h4>
               <address className="text-sm leading-relaxed text-gray-500 not-italic">
-                <MapPin className="mr-1 inline h-3.5 w-3.5 text-orange-500" />
-                Rua Ademar de Barros, 456
+                <MapPin className="mr-1 inline h-3.5 w-3.5 text-emerald-400" />
+                R. Rui Barbosa, 603
                 <br />
-                Centro, Andradina - SP
+                Centro, Mirandópolis - SP
                 <br />
-                CEP 16900-000
+                CEP 16800-000
               </address>
               <p className="mt-3 text-sm text-gray-500">
-                <Phone className="mr-1 inline h-3.5 w-3.5 text-orange-500" /> (18)
-                99999-9999
-              </p>
-              <p className="mt-1 text-sm text-gray-500">
-                <Mail className="mr-1 inline h-3.5 w-3.5 text-orange-500" />{' '}
-                contato@ironfitandradina.com.br
+                <Phone className="mr-1 inline h-3.5 w-3.5 text-emerald-400" /> (18)
+                98109-3334
               </p>
             </div>
           </div>
@@ -636,7 +640,7 @@ export default function SiteInstitucional() {
           >
             <div className="flex items-center justify-between border-b border-gray-800 px-6 py-4">
               <h3 className="text-lg font-bold text-white">
-                <CalendarDays className="mr-2 inline h-5 w-5 text-orange-500" />
+                <CalendarDays className="mr-2 inline h-5 w-5 text-emerald-400" />
                 Agende sua Aula Experimental
               </h3>
               <button
@@ -659,7 +663,7 @@ export default function SiteInstitucional() {
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
                   placeholder="Nome"
-                  className="w-full rounded-xl border border-gray-700 bg-[#1a1a1a] px-4 py-2.5 text-white outline-none transition placeholder:text-gray-600 focus:border-orange-500"
+                  className="w-full rounded-xl border border-gray-700 bg-[#1a1a1a] px-4 py-2.5 text-white outline-none transition placeholder:text-gray-600 focus:border-emerald-500"
                 />
               </div>
               <div>
@@ -671,7 +675,7 @@ export default function SiteInstitucional() {
                   value={telefone}
                   onChange={(e) => setTelefone(e.target.value)}
                   placeholder="(00) 00000-0000"
-                  className="w-full rounded-xl border border-gray-700 bg-[#1a1a1a] px-4 py-2.5 text-white outline-none transition placeholder:text-gray-600 focus:border-orange-500"
+                  className="w-full rounded-xl border border-gray-700 bg-[#1a1a1a] px-4 py-2.5 text-white outline-none transition placeholder:text-gray-600 focus:border-emerald-500"
                 />
               </div>
               <div>
@@ -683,7 +687,7 @@ export default function SiteInstitucional() {
                   value={data}
                   min={hoje}
                   onChange={(e) => setData(e.target.value)}
-                  className="w-full rounded-xl border border-gray-700 bg-[#1a1a1a] px-4 py-2.5 text-white outline-none transition [color-scheme:dark] focus:border-orange-500"
+                  className="w-full rounded-xl border border-gray-700 bg-[#1a1a1a] px-4 py-2.5 text-white outline-none transition [color-scheme:dark] focus:border-emerald-500"
                 />
               </div>
               <div>
@@ -698,8 +702,8 @@ export default function SiteInstitucional() {
                       onClick={() => setHorario(h)}
                       className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition ${
                         horario === h
-                          ? 'border-orange-500 bg-orange-500 text-white'
-                          : 'border-gray-700 text-gray-400 hover:border-orange-500/60 hover:text-orange-400'
+                          ? 'border-emerald-500 bg-emerald-500 text-white'
+                          : 'border-gray-700 text-gray-400 hover:border-emerald-500/60 hover:text-emerald-300'
                       }`}
                     >
                       {h}
@@ -711,7 +715,7 @@ export default function SiteInstitucional() {
               <button
                 type="submit"
                 disabled={salvando}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 py-3 font-bold text-white shadow-lg shadow-orange-500/30 transition hover:bg-orange-600 disabled:opacity-60"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 py-3 font-bold text-white shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-600 disabled:opacity-60"
               >
                 {salvando ? (
                   <Loader2 className="h-5 w-5 animate-spin" />

@@ -384,6 +384,8 @@ export default function PortalAluno() {
   const [identificador, setIdentificador] = useState('')
   const [buscando, setBuscando] = useState(false)
   const [erro, setErro] = useState('')
+  const [pendente, setPendente] = useState<Aluno | null>(null) // Aluno encontrado, aguardando PIN
+  const [pinDigitado, setPinDigitado] = useState('')
 
   // ---------- Check-in do dia ----------
   const [verificandoCheckin, setVerificandoCheckin] = useState(false)
@@ -509,13 +511,54 @@ export default function PortalAluno() {
         return
       }
 
-      // Mantém a sessão ativa no localStorage
+      // Se o aluno tem PIN configurado, solicita verificação
+      if (match.pin) {
+        setPendente(match)
+        setPinDigitado('')
+        setBuscando(false)
+        return
+      }
+
+      // Sem PIN: login direto
       const nova: Sessao = { aluno: match, logadaEm: new Date().toISOString() }
       localStorage.setItem(CHAVE_SESSAO, JSON.stringify(nova))
       setSessao(nova)
       toast(`Bem-vindo(a), ${match.nome.split(' ')[0]}! 💪`)
     } catch (e: any) {
       setErro(e?.message || 'Erro ao acessar. Tente novamente.')
+    } finally {
+      setBuscando(false)
+    }
+  }
+
+  // ===================================================================
+  // VERIFICAR PIN — valida o PIN digitado contra o salvo no banco
+  // ===================================================================
+  const verificarPin = async (ev: any) => {
+    ev.preventDefault()
+    if (!pendente) return
+    if (pinDigitado.length < 4) {
+      setErro('O PIN deve ter pelo menos 4 dígitos.')
+      return
+    }
+    setBuscando(true)
+    setErro('')
+    try {
+      // Compara o PIN digitado com o salvo no banco
+      if (pinDigitado !== pendente.pin) {
+        setErro('PIN incorreto. Tente novamente.')
+        setBuscando(false)
+        return
+      }
+      // PIN correto: efetua login
+      const nova: Sessao = { aluno: pendente, logadaEm: new Date().toISOString() }
+      localStorage.setItem(CHAVE_SESSAO, JSON.stringify(nova))
+      setSessao(nova)
+      setPendente(null)
+      setPinDigitado('')
+      toast(`Bem-vindo(a), ${pendente.nome.split(' ')[0]}! 💪`)
+    } catch (e: any) {
+      setErro(e?.message || 'Erro ao verificar PIN.')
     } finally {
       setBuscando(false)
     }
@@ -1245,49 +1288,119 @@ export default function PortalAluno() {
             <p className="mt-1 text-sm font-medium text-white/60">{SLOGAN}</p>
           </div>
 
-          {/* Formulário (vidro) */}
-          <form onSubmit={entrar} className="space-y-4">
-            <div className={`${VIDRO} p-5`}>
-              <label
-                htmlFor="identificador"
-                className="mb-1 block text-xs font-semibold uppercase tracking-wide text-white/60"
-              >
-                CPF ou Telefone
-              </label>
-              <div className="relative">
-                <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
-                <input
-                  id="identificador"
-                  value={identificador}
-                  onChange={(e) => setIdentificador(e.target.value)}
-                  placeholder="Ex.: 11999999999"
-                  inputMode="tel"
-                  autoComplete="tel"
-                  className="w-full rounded-xl border border-white/15 bg-white/10 py-2.5 pl-9 pr-3 text-sm text-white outline-none transition backdrop-blur placeholder:text-white/40 focus:border-primary-400 focus:ring-2 focus:ring-primary-500/30"
-                />
-              </div>
-
-              {erro && (
-                <div className="mt-3 flex items-start gap-2 rounded-xl border border-red-400/40 bg-red-500/20 px-3 py-2.5 text-sm text-red-200">
-                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span>{erro}</span>
+          {/* Formulário (vidro) — CPF/Telefone ou PIN */}
+          {!pendente ? (
+            <form onSubmit={entrar} className="space-y-4">
+              <div className={`${VIDRO} p-5`}>
+                <label
+                  htmlFor="identificador"
+                  className="mb-1 block text-xs font-semibold uppercase tracking-wide text-white/60"
+                >
+                  CPF ou Telefone
+                </label>
+                <div className="relative">
+                  <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+                  <input
+                    id="identificador"
+                    value={identificador}
+                    onChange={(e) => setIdentificador(e.target.value)}
+                    placeholder="Ex.: 11999999999"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    className="w-full rounded-xl border border-white/15 bg-white/10 py-2.5 pl-9 pr-3 text-sm text-white outline-none transition backdrop-blur placeholder:text-white/40 focus:border-primary-400 focus:ring-2 focus:ring-primary-500/30"
+                  />
                 </div>
-              )}
 
-              <button
-                type="submit"
-                disabled={buscando}
-                className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 py-3 text-sm font-bold text-white shadow-lg shadow-primary-900/50 transition hover:brightness-105 active:scale-[0.99] disabled:opacity-60"
-              >
-                {buscando ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <User className="h-4 w-4" />
+                {erro && (
+                  <div className="mt-3 flex items-start gap-2 rounded-xl border border-red-400/40 bg-red-500/20 px-3 py-2.5 text-sm text-red-200">
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                    <span>{erro}</span>
+                  </div>
                 )}
-                {buscando ? 'Verificando...' : 'Entrar no meu espaço'}
-              </button>
-            </div>
-          </form>
+
+                <button
+                  type="submit"
+                  disabled={buscando}
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 py-3 text-sm font-bold text-white shadow-lg shadow-primary-900/50 transition hover:brightness-105 active:scale-[0.99] disabled:opacity-60"
+                >
+                  {buscando ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <User className="h-4 w-4" />
+                  )}
+                  {buscando ? 'Verificando...' : 'Entrar no meu espaço'}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={verificarPin} className="space-y-4">
+              <div className={`${VIDRO} p-5`}>
+                <div className="mb-4 flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-sm font-extrabold ring-1 ring-white/30">
+                    {iniciais(pendente.nome)}
+                  </span>
+                  <div>
+                    <p className="text-sm font-bold">{pendente.nome}</p>
+                    <p className="text-xs text-white/50">Digite seu PIN para entrar</p>
+                  </div>
+                </div>
+
+                <label
+                  htmlFor="pin"
+                  className="mb-1 block text-xs font-semibold uppercase tracking-wide text-white/60"
+                >
+                  PIN de Acesso
+                </label>
+                <div className="relative">
+                  <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+                  <input
+                    id="pin"
+                    type="password"
+                    inputMode="numeric"
+                    maxLength={8}
+                    value={pinDigitado}
+                    onChange={(e) => setPinDigitado(e.target.value.replace(/\D/g, ''))}
+                    placeholder="••••"
+                    autoFocus
+                    autoComplete="off"
+                    className="w-full rounded-xl border border-white/15 bg-white/10 py-2.5 pl-9 pr-3 text-center text-lg tracking-[0.5em] text-white outline-none transition backdrop-blur placeholder:text-white/30 focus:border-primary-400 focus:ring-2 focus:ring-primary-500/30"
+                  />
+                </div>
+
+                {erro && (
+                  <div className="mt-3 flex items-start gap-2 rounded-xl border border-red-400/40 bg-red-500/20 px-3 py-2.5 text-sm text-red-200">
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                    <span>{erro}</span>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={buscando || pinDigitado.length < 4}
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 py-3 text-sm font-bold text-white shadow-lg shadow-primary-900/50 transition hover:brightness-105 active:scale-[0.99] disabled:opacity-60"
+                >
+                  {buscando ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Lock className="h-4 w-4" />
+                  )}
+                  {buscando ? 'Verificando...' : 'Entrar'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPendente(null)
+                    setPinDigitado('')
+                    setErro('')
+                  }}
+                  className="mt-3 w-full text-center text-xs text-white/50 transition hover:text-white/80"
+                >
+                  ← Voltar
+                </button>
+              </div>
+            </form>
+          )}
 
           <p className="mt-4 text-center text-xs text-white/40">
             Acesso exclusivo para alunos cadastrados.

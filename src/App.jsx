@@ -1,9 +1,12 @@
 // =====================================================================
-// Raiz da aplicação — providers + rotas
+// Raiz da aplicação — providers + rotas + autenticação
 // =====================================================================
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AppProvider } from './context/AppContext'
 import { ToastProvider } from './components/Toast'
+import { useAuth } from './hooks/useAuth'
+import { Spinner } from './components/ui'
+import LoginPage from './pages/LoginPage'
 import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import Alunos from './pages/Alunos'
@@ -16,22 +19,58 @@ import Crm from './pages/Crm'
 import CrmAgenda from './pages/CrmAgenda'
 import SiteInstitucional from './pages/SiteInstitucional'
 
+// Wrapper que protege rotas do painel — redireciona para login se não autenticado
+function RotaProtegida({ autenticado, children }) {
+  if (!autenticado) return <Navigate to="/login" replace />
+  return children
+}
+
 export default function App() {
+  const auth = useAuth()
+
+  // Carregando sessão
+  if (auth.carregando) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-zinc-100 dark:bg-zinc-950">
+        <Spinner />
+      </div>
+    )
+  }
+
   return (
     <AppProvider>
       <ToastProvider>
         <HashRouter>
           <Routes>
-            {/* Rota pública — Portal do Aluno (independente do painel do gestor) */}
+            {/* Rota de login do gestor */}
+            <Route
+              path="/login"
+              element={
+                auth.autenticado
+                  ? <Navigate to="/" replace />
+                  : <LoginPage auth={auth} />
+              }
+            />
+
+            {/* Rota pública — Portal do Aluno (independente do painel) */}
             <Route path="/aluno" element={<PortalAluno />} />
 
-            <Route element={<Layout />}>
+            {/* Rota pública — Site Institucional */}
+            <Route path="/site-publico" element={<SiteInstitucional />} />
+
+            {/* Painel do Gestor — rotas protegidas */}
+            <Route
+              element={
+                <RotaProtegida autenticado={auth.autenticado}>
+                  <Layout auth={auth} />
+                </RotaProtegida>
+              }
+            >
               <Route path="/" element={<Dashboard />} />
               <Route path="/alunos" element={<Alunos />} />
               <Route path="/financeiro" element={<Financeiro />} />
               <Route path="/treinos" element={<Treinos />} />
               <Route path="/checkins" element={<Checkins />} />
-              {/* Módulo CRM (Site / Leads / Agenda) — Supabase */}
               <Route path="/crm" element={<Navigate to="/crm/leads" replace />} />
               <Route path="/crm/leads" element={<Crm />} />
               <Route path="/crm/agenda" element={<CrmAgenda />} />

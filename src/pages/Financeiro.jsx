@@ -22,9 +22,12 @@ import { useToast } from '../components/Toast'
 import { Modal } from '../components/Modal'
 import { StatusBadge } from '../components/StatusBadge'
 import FormAluno from '../components/FormAluno'
+import { Paginacao } from '../components/Paginacao'
 import { Card, EstadoVazio, Spinner, Select } from '../components/ui'
 import { formatarMoeda, formatarData, diasDesde, iniciais, dataParaInput } from '../utils/format'
 import { abrirWhatsApp, mensagemCobranca } from '../utils/whatsapp'
+
+const ITENS_POR_PAGINA = 20
 
 const FORMAS_PAGAMENTO = [
   'Dinheiro',
@@ -118,6 +121,12 @@ export default function Financeiro() {
         .sort((a, b) => String(b.data_ultimo_pagamento).localeCompare(String(a.data_ultimo_pagamento)))
     return alunos.filter((a) => a.status_pagamento === filtro)
   }, [alunos, filtro])
+
+  // Paginação
+  const [pagina, setPagina] = useState(1)
+  const totalPaginas = Math.ceil(filtrados.length / ITENS_POR_PAGINA)
+  const inicio = (pagina - 1) * ITENS_POR_PAGINA
+  const filtradosPaginados = filtrados.slice(inicio, inicio + ITENS_POR_PAGINA)
 
   // ----- Cobrar via WhatsApp -----
   const cobrar = (aluno) => {
@@ -278,7 +287,7 @@ export default function Financeiro() {
       ) : (
         <Card className="overflow-hidden">
           <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
-            {filtrados.map((aluno) => {
+            {filtradosPaginados.map((aluno) => {
               const statusNaoEmoDia = aluno.status_pagamento !== 'em_dia'
   const atraso = statusNaoEmoDia && aluno.data_vencimento ? diasDesde(aluno.data_vencimento) : null
   const vencido = atraso !== null && atraso > 0
@@ -362,6 +371,15 @@ export default function Financeiro() {
               )
             })}
           </ul>
+          {totalPaginas > 1 && (
+            <div className="border-t border-zinc-200 px-4 py-3 dark:border-zinc-800">
+              <Paginacao
+                paginaAtual={pagina}
+                totalPaginas={totalPaginas}
+                onMudarPagina={setPagina}
+              />
+            </div>
+          )}
         </Card>
       )}
 

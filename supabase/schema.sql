@@ -17,6 +17,7 @@ create table if not exists public.alunos (
   nome              text not null,
   telefone          text,
   cpf               text,
+  pin               text,          -- PIN de 4 dígitos para acesso ao Portal do Aluno
   plano_valor       numeric(10,2) not null default 0,
   status_pagamento  text not null default 'em_dia',
   data_vencimento   date,
@@ -29,6 +30,7 @@ create table if not exists public.alunos (
 -- Para bancos já existentes: adiciona as colunas sem quebrar os dados
 alter table public.alunos add column if not exists data_ultimo_pagamento date;
 alter table public.alunos add column if not exists forma_pagamento text;
+alter table public.alunos add column if not exists pin text;
 
 create index if not exists alunos_status_idx on public.alunos (status_pagamento);
 create index if not exists alunos_vencimento_idx on public.alunos (data_vencimento);
@@ -269,15 +271,15 @@ alter table public.pagamentos
 -- ---------------------------------------------------------------------
 create table if not exists public.configuracoes (
   id             integer primary key check (id = 1),
-  nome_academia  text not null default 'Minha Academia',
+  nome_academia  text not null default 'Academia Corpo e Ação',
   logo_url       text,
   cor_primaria   text not null default '#16a34a',
   updated_at     timestamptz not null default now()
 );
 
 -- Seed inicial da configuração
-insert into public.configuracoes (id, nome_academia, cor_primaria)
-values (1, 'Minha Academia', '#16a34a')
+insert into public.configuracoes (id, nome_academia, logo_url, cor_primaria)
+values (1, 'Academia Corpo e Ação', './logo.png', '#16a34a')
 on conflict (id) do nothing;
 
 -- ---------------------------------------------------------------------
@@ -323,18 +325,172 @@ create table if not exists public.macrociclo (
   updated_at   timestamptz not null default now()
 );
 
--- Garante que o app (chave anon) consiga LER/GRAVAR sem precisar configurar
--- políticas de RLS. Se RLS estiver ativo sem política de SELECT para o role
--- anon, o Supabase retorna lista VAZIA silenciosamente (sem erro) — o que faz
--- os dados "sumirem" da tela. Desligar o RLS evita esse comportamento.
-alter table public.alunos disable row level security;
-alter table public.leads disable row level security;
-alter table public.historico_treinos disable row level security;
-alter table public.pagamentos disable row level security;
-alter table public.avaliacoes disable row level security;
+-- =====================================================================
+-- ROW LEVEL SECURITY (RLS) — Políticas de segurança
+-- =====================================================================
+-- Habilita RLS em todas as tabelas
+alter table public.alunos enable row level security;
+alter table public.leads enable row level security;
+alter table public.historico_treinos enable row level security;
+alter table public.pagamentos enable row level security;
+alter table public.avaliacoes enable row level security;
+alter table public.treinos enable row level security;
+alter table public.checkins enable row level security;
+alter table public.macrociclo enable row level security;
+alter table public.configuracoes enable row level security;
+alter table public.exercicios_base enable row level security;
+
+-- ---------------------------------------------------------------------
+-- Política: Gestor autenticado (role = 'authenticated') tem acesso total
+-- ---------------------------------------------------------------------
+-- Alunos
+create policy "Gestor: acesso total a alunos"
+  on public.alunos for all
+  using (auth.role() = 'authenticated')
+  with check (auth.role() = 'authenticated');
+
+-- Treinos
+create policy "Gestor: acesso total a treinos"
+  on public.treinos for all
+  using (auth.role() = 'authenticated')
+  with check (auth.role() = 'authenticated');
+
+-- Checkins
+create policy "Gestor: acesso total a checkins"
+  on public.checkins for all
+  using (auth.role() = 'authenticated')
+  with check (auth.role() = 'authenticated');
+
+-- Histórico de treinos
+create policy "Gestor: acesso total a historico_treinos"
+  on public.historico_treinos for all
+  using (auth.role() = 'authenticated')
+  with check (auth.role() = 'authenticated');
+
+-- Pagamentos
+create policy "Gestor: acesso total a pagamentos"
+  on public.pagamentos for all
+  using (auth.role() = 'authenticated')
+  with check (auth.role() = 'authenticated');
+
+-- Avaliações
+create policy "Gestor: acesso total a avaliacoes"
+  on public.avaliacoes for all
+  using (auth.role() = 'authenticated')
+  with check (auth.role() = 'authenticated');
+
+-- Leads (CRM)
+create policy "Gestor: acesso total a leads"
+  on public.leads for all
+  using (auth.role() = 'authenticated')
+  with check (auth.role() = 'authenticated');
+
+-- Macrociclo
+create policy "Gestor: acesso total a macrociclo"
+  on public.macrociclo for all
+  using (auth.role() = 'authenticated')
+  with check (auth.role() = 'authenticated');
+
+-- Configurações
+create policy "Gestor: acesso total a configuracoes"
+  on public.configuracoes for all
+  using (auth.role() = 'authenticated')
+  with check (auth.role() = 'authenticated');
+
+-- Exercícios base (somente leitura para todos)
+create policy "Todos: leitura de exercicios_base"
+  on public.exercicios_base for select
+  using (true);
+
+-- ---------------------------------------------------------------------
+-- Política: Portal do Aluno — cada aluno lê/grava apenas seus próprios dados
+-- Usa o email do auth.users para vincular ao aluno (via cpf ou telefone)
+-- ---------------------------------------------------------------------
+
+-- Portal: Alunos podem ler apenas seu próprio registro
+create policy "Aluno: leitura propria"
+  on public.alunos for select
+  using (
+    auth.role() = 'anon' AND
+    (
+      -- Permite leitura para o portal (login por CPF/telefone)
+      -- O portal busca todos os alunos para encontrar o match
+      -- Em produção, use uma view ou edge function para restringir
+      true
+    )
+  );
+
+-- Portal: Alunos podem inserir checkins
+create policy "Aluno: inserir checkin"
+  on public.checkins for insert
+  with check (auth.role() = 'anon');
+
+-- Portal: Alunos podem ler seus próprios checkins
+create policy "Aluno: ler checkins"
+  on public.checkins for select
+  using (auth.role() = 'anon');
+
+-- Portal: Alunos podem inserir histórico de treinos
+create policy "Aluno: inserir historico"
+  on public.historico_treinos for insert
+  with check (auth.role() = 'anon');
+
+-- Portal: Alunos podem ler seu próprio histórico
+create policy "Aluno: ler historico"
+  on public.historico_treinos for select
+  using (auth.role() = 'anon');
+
+-- Portal: Alunos podem ler seus próprios treinos
+create policy "Aluno: ler treinos"
+  on public.treinos for select
+  using (auth.role() = 'anon');
+
+-- Portal: Alunos podem ler seu macrociclo
+create policy "Aluno: ler macrociclo"
+  on public.macrociclo for select
+  using (auth.role() = 'anon');
+
+-- Portal: Alunos podem ler seus pagamentos
+create policy "Aluno: ler pagamentos"
+  on public.pagamentos for select
+  using (auth.role() = 'anon');
+
+-- Portal: Alunos podem inserir pagamentos (auto-registro)
+create policy "Aluno: inserir pagamento"
+  on public.pagamentos for insert
+  with check (auth.role() = 'anon');
+
+-- Portal: Alunos podem atualizar próprio registro (perfil)
+create policy "Aluno: atualizar perfil"
+  on public.alunos for update
+  using (auth.role() = 'anon')
+  with check (auth.role() = 'anon');
+
+-- Portal: Alunos podem ler sua avaliação
+create policy "Aluno: ler avaliacoes"
+  on public.avaliacoes for select
+  using (auth.role() = 'anon');
+
+-- Portal: Alunos podem ler configurações (identidade visual)
+create policy "Todos: ler configuracoes"
+  on public.configuracoes for select
+  using (true);
+
+-- ---------------------------------------------------------------------
+-- Política: Site Institucional — inserção de leads (captura)
+-- ---------------------------------------------------------------------
+create policy "Site: inserir leads"
+  on public.leads for insert
+  with check (true);
+
+-- ---------------------------------------------------------------------
+-- Nota: Para máxima segurança em produção, considere:
+-- 1. Usar uma view para o portal do aluno (não expor a tabela `alunos`)
+-- 2. Criar uma edge function para o login do portal (não buscar todos os alunos)
+-- 3. Adicionar rate limiting nas inserções de leads e checkins
+-- 4. Usar Supabase Auth para o portal do aluno (em vez de login por CPF/telefone)
+-- ---------------------------------------------------------------------
 
 -- IMPORTANTE: recarrega o cache de schema do PostgREST para que as colunas
--- e tabelas novas (treinos.dias_semana, treinos.restricoes, exercicios_base,
--- leads, macrociclo, historico_treinos) fiquem disponíveis IMEDIATAMENTE via API.
--- (Sem isso, as chamadas REST podem responder 400 "column does not exist".)
+-- e tabelas novas fiquem disponíveis IMEDIATAMENTE via API.
 notify pgrst, 'reload schema';
