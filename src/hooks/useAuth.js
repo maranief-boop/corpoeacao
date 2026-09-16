@@ -9,6 +9,7 @@ export function useAuth() {
   const [usuario, setUsuario] = useState(null)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState(null)
+  const [emailConfirmacaoPendente, setEmailConfirmacaoPendente] = useState(null)
 
   // Verifica se há uma sessão ativa ao carregar
   useEffect(() => {
@@ -36,14 +37,19 @@ export function useAuth() {
   // Login com email + senha
   const login = useCallback(async (email, senha) => {
     setErro(null)
+    setEmailConfirmacaoPendente(null)
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim().toLowerCase(),
       password: senha
     })
     if (error) {
-      const msg = error.message.includes('Invalid login')
-        ? 'Email ou senha incorretos.'
-        : error.message
+      // Traduz mensagens comuns
+      let msg = error.message
+      if (msg.includes('Invalid login') || msg.includes('invalid')) {
+        msg = 'Email ou senha incorretos.'
+      } else if (msg.includes('Email not confirmed')) {
+        msg = 'Email ainda não confirmado. Verifique sua caixa de entrada.'
+      }
       setErro(msg)
       throw new Error(msg)
     }
@@ -51,9 +57,12 @@ export function useAuth() {
     return data.user
   }, [])
 
-  // Cadastro de novo gestor (apenas se não houver nenhum usuário)
+  // Cadastro de novo gestor + login automático
   const cadastrar = useCallback(async (email, senha) => {
     setErro(null)
+    setEmailConfirmacaoPendente(null)
+
+    // 1. Tenta cadastrar
     const { data, error } = await supabase.auth.signUp({
       email: email.trim().toLowerCase(),
       password: senha,
@@ -61,29 +70,48 @@ export function useAuth() {
     })
     if (error) {
       const msg = error.message.includes('already registered')
-        ? 'Este email já está cadastrado.'
+        ? 'Este email já está cadastrado. Tente fazer login.'
         : error.message
       setErro(msg)
       throw new Error(msg)
     }
-    setUsuario(data.user)
-    return data.user
+
+    // 2. Se o Supabase retornou sessão (confirmação de email DESABILITADA), loga direto
+    if (data.session) {
+      setUsuario(data.user)
+      return data.user
+    }
+
+    // 3. Se não retornou sessão, precisa de confirmação de email
+    // Tenta fazer login automaticamente (funciona se confirmação estiver desabilitada)
+    const { error: loginError } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password: senha
+    })
+
+    if (!loginError) {
+      // Login automático funcionou (confirmação de email desabilitada)
+      const { data: sessao } = await supabase.auth.getSession()
+      setUsuario(sessao?.session?.user ?? null)
+      return sessao?.session?.user
+    }
+
+    // 4. Se o login automático falhou, precisa de confirmação de email
+    setEmailConfirmacaoPendente(email.trim().toLowerCase())
+    return null
+  }, [])
+
+  // Reenvia email de confirmação
+  const reenviarConfirmacao = useCallback(async (email) => {
+    const { error } = await supabase.auth.resend({ type: 'signup', email })
+    if (error) throw error
   }, [])
 
   // Logout
   const logout = useCallback(async () => {
     await supabase.auth.signOut()
     setUsuario(null)
-  }, [])
-
-  // Verifica se há algum usuário cadastrado (para decidir mostrar "Login" ou "Cadastro")
-  const temUsuarios = useCallback(async () => {
-    // Se conseguimos obter uma sessão, existe pelo menos um usuário
-    const { data: { session } } = await supabase.auth.getSession()
-    // Also try to list users (only works with service_role, so we fallback)
-    // For simplicity, we check if there's an active session from before
-    // In production, you'd check via an edge function
-    return !!session
+    setEmailConfirmacaoPendente(null)
   }, [])
 
   // Limpa a mensagem de erro
@@ -95,10 +123,11 @@ export function useAuth() {
     usuario,
     carregando,
     erro,
+    emailConfirmacaoPendente,
     login,
     cadastrar,
     logout,
-    temUsuarios,
+    reenviarConfirmacao,
     limparErro,
     autenticado: !!usuario
   }

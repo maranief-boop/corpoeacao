@@ -3,7 +3,7 @@
 // O formulário de captura de leads agora grava no SUPABASE (tabela
 // "leads") — mesma instância do sistema — em vez do Firestore.
 // =====================================================================
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Dumbbell,
   Flame,
@@ -29,6 +29,7 @@ import {
   Clock,
   Loader2
 } from 'lucide-react'
+import { supabase } from '../lib/supabase'
 import { useLeads } from '../hooks/useLeads'
 import { useToast } from '../components/Toast'
 import { useApp } from '../context/AppContext'
@@ -79,7 +80,38 @@ export default function SiteInstitucional() {
   const [idade, setIdade] = useState(30)
   const [resultadoImc, setResultadoImc] = useState(null)
 
+  // Horários ocupados na data selecionada
+  const [horariosOcupados, setHorariosOcupados] = useState([])
+  const [carregandoHorarios, setCarregandoHorarios] = useState(false)
+
   const hoje = dataParaInput(new Date())
+
+  // Busca horários já agendados quando a data muda
+  const carregarHorariosOcupados = useCallback(async (dataSelecionada) => {
+    if (!dataSelecionada) {
+      setHorariosOcupados([])
+      return
+    }
+    setCarregandoHorarios(true)
+    try {
+      const { data, error } = await supabase
+        .from('leads')
+        .select('horario_preferido')
+        .eq('data_preferida', dataSelecionada)
+        .not('horario_preferido', 'is', null)
+      if (!error && data) {
+        setHorariosOcupados(data.map((l) => l.horario_preferido).filter(Boolean))
+      }
+    } catch {
+      // ignora erro
+    } finally {
+      setCarregandoHorarios(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    carregarHorariosOcupados(data)
+  }, [data, carregarHorariosOcupados])
 
   const abrirLead = () => {
     setMenuAberto(false)
@@ -90,6 +122,9 @@ export default function SiteInstitucional() {
     evento.preventDefault()
     if (!nome.trim()) return toast('Informe seu nome', 'aviso')
     if (!telefone.trim()) return toast('Informe seu WhatsApp', 'aviso')
+    if (data && horario && horariosOcupados.includes(horario)) {
+      return toast('Este horário já está ocupado. Escolha outro.', 'aviso')
+    }
     setSalvando(true)
     const r = await criar({
       nome,
@@ -694,22 +729,39 @@ export default function SiteInstitucional() {
                 <label className="mb-1.5 block text-xs font-medium text-gray-400">
                   Melhor horário (opcional)
                 </label>
+                {carregandoHorarios && (
+                  <p className="mb-2 text-xs text-gray-500">Verificando horários...</p>
+                )}
                 <div className="flex flex-wrap gap-2">
-                  {HORARIOS.map((h) => (
-                    <button
-                      key={h}
-                      type="button"
-                      onClick={() => setHorario(h)}
-                      className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition ${
-                        horario === h
-                          ? 'border-emerald-500 bg-emerald-500 text-white'
-                          : 'border-gray-700 text-gray-400 hover:border-emerald-500/60 hover:text-emerald-300'
-                      }`}
-                    >
-                      {h}
-                    </button>
-                  ))}
+                  {HORARIOS.map((h) => {
+                    const ocupado = horariosOcupados.includes(h)
+                    const selecionado = horario === h
+                    return (
+                      <button
+                        key={h}
+                        type="button"
+                        onClick={() => !ocupado && setHorario(ocupado ? horario : h)}
+                        disabled={ocupado}
+                        className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition ${
+                          ocupado
+                            ? 'cursor-not-allowed border-red-800 bg-red-900/30 text-red-500/50 line-through'
+                            : selecionado
+                              ? 'border-emerald-500 bg-emerald-500 text-white'
+                              : 'border-gray-700 text-gray-400 hover:border-emerald-500/60 hover:text-emerald-300'
+                        }`}
+                        title={ocupado ? 'Este horário já está agendado' : h}
+                      >
+                        {h}
+                        {ocupado && ' ✕'}
+                      </button>
+                    )
+                  })}
                 </div>
+                {horariosOcupados.length > 0 && (
+                  <p className="mt-2 text-[10px] text-red-400">
+                    ✕ = horário já ocupado ({horariosOcupados.length} agendado(s))
+                  </p>
+                )}
               </div>
 
               <button

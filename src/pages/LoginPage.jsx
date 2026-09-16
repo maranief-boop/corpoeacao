@@ -10,7 +10,7 @@ import { Button, Input, Label, Card } from '../components/ui'
 export default function LoginPage({ auth }) {
   const { config } = useApp()
   const { toast } = useToast()
-  const { login, cadastrar, erro, limparErro } = auth
+  const { login, cadastrar, erro, emailConfirmacaoPendente, limparErro } = auth
 
   const [modo, setModo] = useState('login') // 'login' | 'cadastro'
   const [email, setEmail] = useState('')
@@ -35,8 +35,11 @@ export default function LoginPage({ auth }) {
         await login(email, senha)
         toast('Bem-vindo(a) ao painel! 💪')
       } else {
-        await cadastrar(email, senha)
-        toast('Conta criada! Verifique seu email para confirmar.')
+        const resultado = await cadastrar(email, senha)
+        if (resultado) {
+          toast('Conta criada! Bem-vindo(a)! 💪')
+        }
+        // Se retornou null, precisa de confirmação de email (estado já setado no hook)
       }
     } catch (e) {
       toast(e.message || 'Erro ao autenticar.', 'erro')
@@ -131,6 +134,38 @@ export default function LoginPage({ auth }) {
             {erro && (
               <div className="rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
                 {erro}
+              </div>
+            )}
+
+            {emailConfirmacaoPendente && (
+              <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
+                <p className="font-bold">📧 Confirme seu email</p>
+                <p className="mt-1">
+                  Um email de confirmação foi enviado para <strong>{emailConfirmacaoPendente}</strong>.
+                  Clique no link para ativar sua conta.
+                </p>
+                <div className="mt-3 rounded-lg bg-white/60 p-3 text-xs dark:bg-black/20">
+                  <p className="font-bold">Para desabilitar a confirmação de email:</p>
+                  <ol className="mt-1 list-inside list-decimal space-y-0.5">
+                    <li>Acesse o painel do Supabase</li>
+                    <li>Vá em <strong>Authentication → Providers → Email</strong></li>
+                    <li>Desmarque <strong>"Confirm email"</strong></li>
+                    <li>Salve e tente fazer login novamente</li>
+                  </ol>
+                </div>
+                <button
+                  onClick={async () => {
+                    try {
+                      await auth.reenviarConfirmacao(emailConfirmacaoPendente)
+                      toast('Email de confirmação reenviado!')
+                    } catch (e) {
+                      toast('Erro ao reenviar: ' + e.message, 'erro')
+                    }
+                  }}
+                  className="mt-2 text-xs font-semibold underline transition hover:no-underline"
+                >
+                  Reenviar email de confirmação
+                </button>
               </div>
             )}
 
