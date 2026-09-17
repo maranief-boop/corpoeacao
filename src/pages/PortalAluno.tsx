@@ -1542,10 +1542,6 @@ export default function PortalAluno() {
               subtitulo="Telefone, foto"
               onAbrir={() => setModalAberto('perfil')}
             />
-              valor={aluno.nome.split(' ')[0]}
-              subtitulo="Editar meus dados"
-              onAbrir={() => setModalAberto('perfil')}
-            />
           </div>
 
           {/* ---------- Grade 4: Matrícula + Avaliação Física ---------- */}
