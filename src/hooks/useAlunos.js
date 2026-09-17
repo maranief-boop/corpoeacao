@@ -22,7 +22,7 @@ export function useAlunos() {
     if (error) {
       const { data: d2, error: e2 } = await supabase
         .from('alunos')
-        .select('id, nome, telefone, cpf, pin, plano_valor, status_pagamento, data_vencimento, data_ultimo_pagamento, forma_pagamento, created_at')
+        .select('id, nome, telefone, cpf, email, foto_url, data_nascimento, plano_contratado, pin, plano_valor, status_pagamento, data_vencimento, data_ultimo_pagamento, forma_pagamento, created_at')
         .order('nome')
       if (!e2) {
         data = d2
@@ -63,6 +63,25 @@ export function useAlunos() {
     return data
   }, [])
 
+  // UPLOAD FOTO
+  const uploadFoto = useCallback(async (alunoId, blob) => {
+    const nomeArquivo = `fotos/${alunoId}_${Date.now()}.jpg`
+    const { data, error } = await supabase.storage
+      .from('fotos-alunos')
+      .upload(nomeArquivo, blob, {
+        contentType: 'image/jpeg',
+        upsert: true
+      })
+    if (error) throw error
+
+    // Obter URL pública
+    const { data: urlData } = await supabase.storage
+      .from('fotos-alunos')
+      .getPublicUrl(nomeArquivo)
+
+    return urlData.publicUrl
+  }, [])
+
   // DELETE
   const remover = useCallback(async (id) => {
     const { error } = await supabase.from('alunos').delete().eq('id', id)
@@ -70,5 +89,5 @@ export function useAlunos() {
     setAlunos((prev) => prev.filter((a) => a.id !== id))
   }, [])
 
-  return { alunos, carregando, erro, carregar, criar, atualizar, remover }
+  return { alunos, carregando, erro, carregar, criar, atualizar, remover, uploadFoto }
 }

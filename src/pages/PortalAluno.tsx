@@ -8,6 +8,7 @@ import type { ReactNode } from 'react'
 import { supabase } from '../lib/supabase'
 import { useApp } from '../context/AppContext'
 import { useToast } from '../components/Toast'
+import ModalPerfil from '../components/ModalPerfil'
 import {
   Activity,
   AlertCircle,
@@ -461,6 +462,31 @@ export default function PortalAluno() {
 
   // ---------- Avaliação física ----------
   const [avaliacao, setAvaliacao] = useState<any>(null)
+
+  // Função para atualizar perfil do aluno
+  const atualizarPerfil = async (payload: Partial<Aluno>) => {
+    if (!sessao) return
+    setSalvandoPerfil(true)
+    try {
+      const { data, error } = await supabase
+        .from('alunos')
+        .update(payload)
+        .eq('id', sessao.aluno.id)
+        .select()
+        .single()
+      if (error) throw error
+
+      const nova: Sessao = { ...sessao, aluno: data }
+      localStorage.setItem(CHAVE_SESSAO, JSON.stringify(nova))
+      setSessao(nova)
+      toast('Perfil atualizado com sucesso!')
+      setModalAberto(null)
+    } catch (e: any) {
+      toast(e.message || 'Erro ao atualizar perfil.', 'erro')
+    } finally {
+      setSalvandoPerfil(false)
+    }
+  }
 
   // Competência atual (ex.: "2026-08")
   const competenciaAtual = (() => {
@@ -1307,7 +1333,7 @@ export default function PortalAluno() {
                     placeholder="Ex.: 11999999999"
                     inputMode="tel"
                     autoComplete="tel"
-                    className="w-full rounded-xl border border-white/15 bg-white/10 py-2.5 pl-9 pr-3 text-sm text-white outline-none transition backdrop-blur placeholder:text-white/40 focus:border-primary-400 focus:ring-2 focus:ring-primary-500/30"
+                    className="w-full rounded-xl border border-white/20 bg-black/40 py-2.5 pl-9 pr-3 text-sm text-white outline-none transition backdrop-blur placeholder:text-zinc-400 focus:border-primary-400 focus:ring-2 focus:ring-primary-500/30"
                   />
                 </div>
 
@@ -1512,6 +1538,10 @@ export default function PortalAluno() {
             <TileCard
               icon={User}
               titulo="Perfil"
+              valor="Meus dados"
+              subtitulo="Telefone, foto"
+              onAbrir={() => setModalAberto('perfil')}
+            />
               valor={aluno.nome.split(' ')[0]}
               subtitulo="Editar meus dados"
               onAbrir={() => setModalAberto('perfil')}

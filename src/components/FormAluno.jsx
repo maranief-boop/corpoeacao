@@ -10,6 +10,10 @@ const ALUNO_VAZIO = {
   nome: '',
   telefone: '',
   cpf: '',
+  email: '',
+  foto_url: '',
+  data_nascimento: '',
+  plano_contratado: '',
   pin: '',
   plano_valor: '',
   data_vencimento: '',
@@ -24,6 +28,7 @@ export default function FormAluno({ inicial = null, salvando, onSalvar, onCancel
           ...inicial,
           plano_valor: inicial.plano_valor != null ? String(inicial.plano_valor) : '',
           data_vencimento: paraInputDate(inicial.data_vencimento),
+          data_nascimento: paraInputDate(inicial.data_nascimento),
           pin: inicial.pin || ''
         }
       : ALUNO_VAZIO
@@ -51,6 +56,10 @@ export default function FormAluno({ inicial = null, salvando, onSalvar, onCancel
       nome: form.nome.trim(),
       telefone: form.telefone.trim(),
       cpf: form.cpf.trim(),
+      email: form.email.trim(),
+      foto_url: form.foto_url.trim(),
+      data_nascimento: form.data_nascimento || null,
+      plano_contratado: form.plano_contratado.trim(),
       pin: form.pin.trim() || null,
       plano_valor: Number(form.plano_valor || 0),
       data_vencimento: form.data_vencimento || null,
@@ -76,6 +85,16 @@ export default function FormAluno({ inicial = null, salvando, onSalvar, onCancel
         {campoErro('nome')}
       </div>
 
+      <div>
+        <Label>Email</Label>
+        <Input
+          type="email"
+          value={form.email}
+          onChange={(e) => set('email', e.target.value)}
+          placeholder="joao@email.com"
+        />
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <Label>Telefone / WhatsApp</Label>
@@ -93,6 +112,25 @@ export default function FormAluno({ inicial = null, salvando, onSalvar, onCancel
             onChange={(e) => set('cpf', e.target.value)}
             placeholder="123.456.789-00"
             inputMode="numeric"
+          />
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <Label>Data de Nascimento</Label>
+          <Input
+            type="date"
+            value={form.data_nascimento}
+            onChange={(e) => set('data_nascimento', e.target.value)}
+          />
+        </div>
+        <div>
+          <Label>Foto URL</Label>
+          <Input
+            value={form.foto_url}
+            onChange={(e) => set('foto_url', e.target.value)}
+            placeholder="https://..."
           />
         </div>
       </div>
@@ -125,6 +163,14 @@ export default function FormAluno({ inicial = null, salvando, onSalvar, onCancel
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <Label>Plano Contratado</Label>
+          <Input
+            value={form.plano_contratado}
+            onChange={(e) => set('plano_contratado', e.target.value)}
+            placeholder="Ex.: Mensal, Trimestral, VIP"
+          />
+        </div>
         <div>
           <Label>Valor da mensalidade (R$)</Label>
           <Input
