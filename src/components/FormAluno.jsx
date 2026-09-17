@@ -53,14 +53,14 @@ export default function FormAluno({ inicial = null, salvando, onSalvar, onCancel
     ev.preventDefault()
     if (!validar()) return
     onSalvar({
-      nome: form.nome.trim(),
-      telefone: form.telefone.trim(),
-      cpf: form.cpf.trim(),
-      email: form.email.trim(),
-      foto_url: form.foto_url.trim(),
+      nome: (form.nome || '').trim(),
+      telefone: (form.telefone || '').trim(),
+      cpf: (form.cpf || '').trim(),
+      email: (form.email || '').trim(),
+      foto_url: (form.foto_url || '').trim(),
       data_nascimento: form.data_nascimento || null,
-      plano_contratado: form.plano_contratado.trim(),
-      pin: form.pin.trim() || null,
+      plano_contratado: (form.plano_contratado || '').trim(),
+      pin: (form.pin || '').trim() || null,
       plano_valor: Number(form.plano_valor || 0),
       data_vencimento: form.data_vencimento || null,
       status_pagamento: form.status_pagamento
