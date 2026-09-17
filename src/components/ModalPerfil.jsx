@@ -11,12 +11,18 @@ export default function ModalPerfil({ aluno, onSalvar, onFechar }) {
   const canvasRef = useRef(null)
 
   const iniciarCamera = async () => {
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices) {
+      alert('Seu navegador não suporta acesso à câmera.')
+      return
+    }
     setCapturando(true)
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true })
-      videoRef.current.srcObject = stream
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+      }
     } catch (e) {
-      alert('Não foi possível acessar a câmera.')
+      alert('Não foi possível acessar a câmera: ' + e.message)
       setCapturando(false)
     }
   }
@@ -40,7 +46,7 @@ export default function ModalPerfil({ aluno, onSalvar, onFechar }) {
         <h2 className="text-lg font-bold text-white">Editar Perfil</h2>
 
         <Label>Telefone</Label>
-        <Input value={telefone} onChange={(e) => setTelefone(e.target.value)} />
+        <Input className="!bg-black !text-white" value={telefone} onChange={(e) => setTelefone(e.target.value)} />
 
         <div className="space-y-2">
           <Label>Foto do Perfil</Label>

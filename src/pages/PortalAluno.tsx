@@ -1333,7 +1333,7 @@ export default function PortalAluno() {
                     placeholder="Ex.: 11999999999"
                     inputMode="tel"
                     autoComplete="tel"
-                    className="w-full rounded-xl border border-white/20 bg-black/40 py-2.5 pl-9 pr-3 text-sm text-white outline-none transition backdrop-blur placeholder:text-zinc-400 focus:border-primary-400 focus:ring-2 focus:ring-primary-500/30"
+                    className="w-full rounded-xl border border-white/20 bg-black/60 py-2.5 pl-9 pr-3 text-sm text-white outline-none transition backdrop-blur placeholder:text-zinc-300 focus:border-primary-400 focus:ring-2 focus:ring-primary-500/30 !bg-black"
                   />
                 </div>
 
