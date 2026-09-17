@@ -8,7 +8,7 @@ import type { ReactNode } from 'react'
 import { supabase } from '../lib/supabase'
 import { useApp } from '../context/AppContext'
 import { useToast } from '../components/Toast'
-import ModalPerfil from '../components/ModalPerfil'
+import ModalPerfil from '../components/ModalPerfil.jsx'
 import {
   Activity,
   AlertCircle,
