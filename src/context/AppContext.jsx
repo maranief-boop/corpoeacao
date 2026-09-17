@@ -18,8 +18,8 @@ const AppContext = createContext(null)
 
 const CONFIG_INICIAL = {
   id: 1,
-  nome_academia: 'Minha Academia',
-  logo_url: '',
+  nome_academia: 'Academia Corpo e Ação',
+  logo_url: '/logo.png',
   cor_primaria: '#16a34a'
 }
 
@@ -46,16 +46,12 @@ export function AppProvider({ children }) {
     return () => media.removeEventListener('change', aplicar)
   }, [tema])
 
-  // ----- Carrega a configuração do Supabase (fallback: localStorage) -----
+  // ----- Carrega a configuração do Supabase (fallback: configuração inicial) -----
+  // Enquanto o Supabase ainda não estiver configurado, aplica a identidade padrão
+  // da "Academia Corpo e Ação" (logo embutida no projeto).
   useEffect(() => {
     let ativo = true
     ;(async () => {
-      let local = null
-      try {
-        local = JSON.parse(localStorage.getItem('config_academia'))
-      } catch {
-        /* ignore */
-      }
       const { data } = await supabase
         .from('configuracoes')
         .select('*')
@@ -63,8 +59,10 @@ export function AppProvider({ children }) {
         .maybeSingle()
 
       if (!ativo) return
-      const base = data || local || CONFIG_INICIAL
+      const base = data || CONFIG_INICIAL
       const nova = { ...CONFIG_INICIAL, ...base }
+      // Se ainda não houver logo cadastrada, mantém a logo padrão do projeto
+      nova.logo_url = nova.logo_url ?? CONFIG_INICIAL.logo_url
       setConfig(nova)
       aplicarPaleta(nova.cor_primaria || CONFIG_INICIAL.cor_primaria)
       // Sincroniza theme-color do navegador com a cor primária
