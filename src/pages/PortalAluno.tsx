@@ -549,7 +549,7 @@ export default function PortalAluno() {
       const nova: Sessao = { aluno: match, logadaEm: new Date().toISOString() }
       localStorage.setItem(CHAVE_SESSAO, JSON.stringify(nova))
       setSessao(nova)
-      toast(`Bem-vindo(a), ${match.nome.split(' ')[0]}! 💪`)
+      toast(`Bem-vindo(a), ${(match.nome || 'Aluno').split(' ')[0]}! 💪`)
     } catch (e: any) {
       setErro(e?.message || 'Erro ao acessar. Tente novamente.')
     } finally {
@@ -582,7 +582,7 @@ export default function PortalAluno() {
       setSessao(nova)
       setPendente(null)
       setPinDigitado('')
-      toast(`Bem-vindo(a), ${pendente.nome.split(' ')[0]}! 💪`)
+      toast(`Bem-vindo(a), ${(pendente.nome || 'Aluno').split(' ')[0]}! 💪`)
     } catch (e: any) {
       setErro(e?.message || 'Erro ao verificar PIN.')
     } finally {
