@@ -113,9 +113,9 @@ function crc16Pix(payload: string): string {
   return crc.toString(16).toUpperCase().padStart(4, '0')
 }
 
-// Estilo "vidro fosco" premium usado nos cards principais (alta legibilidade e contraste)
+// Estilo escuro sólido premium usado nos cards principais (alta legibilidade e contraste contra foto de fundo)
 const VIDRO =
-  'rounded-3xl border border-white/15 bg-slate-900/80 shadow-2xl ring-1 ring-inset ring-white/10 backdrop-blur-xl'
+  'rounded-3xl border border-zinc-700/50 bg-zinc-900/95 shadow-2xl backdrop-blur-md'
 
 // Cabeçalho padrão dos cards: ícone em pílula + título
 function CardHeader({
@@ -168,7 +168,8 @@ function TileCard({
     <button
       type="button"
       onClick={onAbrir}
-      className="group flex flex-col gap-1.5 rounded-2xl border border-white/15 bg-slate-900/75 p-3.5 text-left shadow-xl backdrop-blur-xl transition-all duration-300 hover:border-white/30 hover:bg-slate-900/90 active:scale-[0.97]"
+      style={{ backgroundColor: 'rgba(24, 24, 27, 0.94)', borderColor: 'rgba(63, 63, 70, 0.5)' }}
+      className="group flex flex-col gap-1.5 rounded-2xl border border-zinc-700/50 bg-zinc-900/95 p-3.5 text-left shadow-xl backdrop-blur-md transition-all duration-300 hover:border-zinc-500 hover:bg-zinc-800/95 active:scale-[0.97]"
     >
       <div className="flex items-center justify-between">
         <span
@@ -176,14 +177,14 @@ function TileCard({
         >
           <Icone className="h-4 w-4" />
         </span>
-        <Maximize2 className="h-3.5 w-3.5 text-white/40 transition-all duration-300 group-hover:text-white" />
+        <Maximize2 className="h-3.5 w-3.5 text-zinc-400 transition-all duration-300 group-hover:text-white" />
       </div>
       <p className="mt-1 text-[11px] font-bold uppercase tracking-wider text-zinc-300">
         {titulo}
       </p>
       {valor && <p className="text-base font-black leading-tight text-white drop-shadow-sm">{valor}</p>}
       {subtitulo && (
-        <p className="text-[11px] font-medium leading-snug text-zinc-300/85">{subtitulo}</p>
+        <p className="text-[11px] font-medium leading-snug text-zinc-400">{subtitulo}</p>
       )}
     </button>
   )
@@ -209,7 +210,8 @@ function ModalExpandido({
       onClick={onFechar}
     >
       <div
-        className={`flex max-h-[92vh] w-full ${largura} flex-col overflow-hidden rounded-t-3xl border border-white/15 bg-slate-950/95 shadow-[0_24px_64px_rgba(0,0,0,0.8)] ring-1 ring-inset ring-white/10 backdrop-blur-2xl sm:rounded-3xl`}
+        style={{ backgroundColor: '#18181b', borderColor: 'rgba(63, 63, 70, 0.6)' }}
+        className={`flex max-h-[92vh] w-full ${largura} flex-col overflow-hidden rounded-t-3xl border border-zinc-700/50 bg-zinc-900 shadow-2xl backdrop-blur-xl sm:rounded-3xl`}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -1318,28 +1320,32 @@ export default function PortalAluno() {
           {/* Formulário (vidro) — CPF/Telefone ou PIN */}
           {!pendente ? (
             <form onSubmit={entrar} className="space-y-4">
-              <div className={`${VIDRO} p-6 shadow-2xl`}>
+              <div
+                style={{ backgroundColor: config?.cor_card || 'rgba(24, 24, 27, 0.94)', borderColor: 'rgba(63, 63, 70, 0.6)' }}
+                className="rounded-3xl border border-zinc-700/50 bg-zinc-900/95 p-6 shadow-2xl backdrop-blur-md"
+              >
                 <label
                   htmlFor="identificador"
-                  className="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-300"
+                  className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-zinc-200"
                 >
                   CPF ou Telefone
                 </label>
                 <div className="relative">
-                  <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-300" />
+                  <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
                   <input
                     id="identificador"
                     value={identificador}
                     onChange={(e) => setIdentificador(e.target.value)}
                     placeholder="Ex.: 11999999999"
                     inputMode="tel"
-                    autoComplete="tel"
-                    className="w-full rounded-xl border border-white/20 bg-slate-950/85 py-3 pl-9 pr-3 text-sm font-semibold text-white outline-none transition backdrop-blur-md placeholder:text-zinc-400 focus:border-primary-400 focus:ring-2 focus:ring-primary-500/40 shadow-inner"
+                    autoComplete="off"
+                    style={{ backgroundColor: '#27272a', color: '#ffffff' }}
+                    className="w-full rounded-xl border border-zinc-600 bg-zinc-800 py-3 pl-10 pr-3 text-sm font-semibold text-white outline-none transition placeholder-zinc-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/40"
                   />
                 </div>
 
                 {erro && (
-                  <div className="mt-3 flex items-start gap-2 rounded-xl border border-red-400/40 bg-red-500/20 px-3 py-2.5 text-sm text-red-200">
+                  <div className="mt-3 flex items-start gap-2 rounded-xl border border-red-500/40 bg-red-950/70 px-3 py-2.5 text-sm text-red-200">
                     <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                     <span>{erro}</span>
                   </div>
@@ -1361,9 +1367,12 @@ export default function PortalAluno() {
             </form>
           ) : (
             <form onSubmit={verificarPin} className="space-y-4">
-              <div className={`${VIDRO} p-6 shadow-2xl`}>
+              <div
+                style={{ backgroundColor: config?.cor_card || 'rgba(24, 24, 27, 0.94)', borderColor: 'rgba(63, 63, 70, 0.6)' }}
+                className="rounded-3xl border border-zinc-700/50 bg-zinc-900/95 p-6 shadow-2xl backdrop-blur-md"
+              >
                 <div className="mb-4 flex items-center gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-sm font-extrabold ring-1 ring-white/30">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-sm font-extrabold text-white ring-1 ring-zinc-600">
                     {iniciais(pendente.nome)}
                   </span>
                   <div>
@@ -1374,12 +1383,12 @@ export default function PortalAluno() {
 
                 <label
                   htmlFor="pin"
-                  className="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-300"
+                  className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-zinc-200"
                 >
                   PIN de Acesso
                 </label>
                 <div className="relative">
-                  <LockIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-300" />
+                  <LockIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
                   <input
                     id="pin"
                     type="password"
@@ -1390,12 +1399,13 @@ export default function PortalAluno() {
                     placeholder="••••"
                     autoFocus
                     autoComplete="off"
-                    className="w-full rounded-xl border border-white/20 bg-slate-950/85 py-3 pl-9 pr-3 text-center text-xl font-bold tracking-[0.5em] text-white outline-none transition backdrop-blur-md placeholder:text-zinc-400 focus:border-primary-400 focus:ring-2 focus:ring-primary-500/40 shadow-inner"
+                    style={{ backgroundColor: '#27272a', color: '#ffffff' }}
+                    className="w-full rounded-xl border border-zinc-600 bg-zinc-800 py-3 pl-10 pr-3 text-center text-2xl font-black tracking-[0.5em] text-white outline-none transition placeholder-zinc-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/40"
                   />
                 </div>
 
                 {erro && (
-                  <div className="mt-3 flex items-start gap-2 rounded-xl border border-red-400/40 bg-red-500/20 px-3 py-2.5 text-sm text-red-200">
+                  <div className="mt-3 flex items-start gap-2 rounded-xl border border-red-500/40 bg-red-950/70 px-3 py-2.5 text-sm text-red-200">
                     <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                     <span>{erro}</span>
                   </div>
@@ -1421,7 +1431,7 @@ export default function PortalAluno() {
                     setPinDigitado('')
                     setErro('')
                   }}
-                  className="mt-3 w-full text-center text-xs text-white/50 transition hover:text-white/80"
+                  className="mt-3 w-full text-center text-xs font-semibold text-zinc-300 transition hover:text-white"
                 >
                   ← Voltar
                 </button>
@@ -1566,9 +1576,15 @@ export default function PortalAluno() {
           </div>
 
           {/* ---------- Cronômetro de Treino ---------- */}
-          <section className={`${VIDRO} p-6 text-center`}>
+          <section
+            style={{ backgroundColor: config?.cor_card || 'rgba(24, 24, 27, 0.94)', borderColor: 'rgba(63, 63, 70, 0.5)' }}
+            className={`${VIDRO} p-6 text-center`}
+          >
             <CardHeader icon={Timer} titulo="Cronômetro de Treino" />
-            <div className="mx-auto inline-flex rounded-3xl border border-white/10 bg-white/[0.04] px-8 py-4 shadow-inner ring-1 ring-inset ring-white/5">
+            <div
+              style={{ backgroundColor: '#18181b', borderColor: 'rgba(63, 63, 70, 0.6)' }}
+              className="mx-auto inline-flex rounded-3xl border border-zinc-700/60 bg-zinc-950 px-8 py-4 shadow-inner"
+            >
               <p
                 className={`text-5xl font-extrabold tabular-nums transition-colors ${
                   cronometroAtivo ? 'text-primary-300' : 'text-white'
@@ -1577,7 +1593,7 @@ export default function PortalAluno() {
                 {formatarTempo(tempoDecorrido)}
               </p>
             </div>
-            <p className="mt-3 text-xs font-medium text-white/50">
+            <p className="mt-3 text-xs font-semibold text-zinc-300">
               {cronometroAtivo
                 ? 'Treinando... keep it up! 🔥'
                 : tempoDecorrido > 0
@@ -1619,7 +1635,10 @@ export default function PortalAluno() {
           </section>
 
           {/* ---------- Ficha de Treino ---------- */}
-          <section className={`${VIDRO} p-6`}>
+          <section
+            style={{ backgroundColor: config?.cor_card || 'rgba(24, 24, 27, 0.94)', borderColor: 'rgba(63, 63, 70, 0.5)' }}
+            className={`${VIDRO} p-6`}
+          >
             <CardHeader icon={Dumbbell} titulo="Minha Ficha de Treino" />
 
             {carregandoTreinos ? (
@@ -1768,10 +1787,11 @@ export default function PortalAluno() {
                 {treinos.map((treino) => (
                   <div
                     key={treino.id}
-                    className={`overflow-hidden rounded-2xl border bg-slate-900/75 shadow-xl backdrop-blur-xl transition-all duration-300 hover:border-white/25 hover:bg-slate-900/85 ${
+                    style={{ backgroundColor: 'rgba(24, 24, 27, 0.92)', borderColor: 'rgba(63, 63, 70, 0.5)' }}
+                    className={`overflow-hidden rounded-2xl border border-zinc-700/50 bg-zinc-900/92 shadow-xl backdrop-blur-md transition-all duration-300 hover:border-zinc-500 ${
                       treinoHoje?.id === treino.id
-                        ? 'border-primary-500/40 ring-1 ring-inset ring-primary-500/30'
-                        : 'border-white/15'
+                        ? 'border-primary-500/60 ring-1 ring-inset ring-primary-500/40'
+                        : 'border-zinc-700/50'
                     }`}
                   >
                     <div className="flex items-center justify-between px-4 py-3">
@@ -1847,7 +1867,10 @@ export default function PortalAluno() {
 
                 {/* -------- Macrociclo (12 semanas) -------- */}
                 {macrociclo.length > 0 && (
-                  <div className="overflow-hidden rounded-2xl border border-white/15 bg-slate-900/75 shadow-xl backdrop-blur-xl">
+                  <div
+                    style={{ backgroundColor: 'rgba(24, 24, 27, 0.92)', borderColor: 'rgba(63, 63, 70, 0.5)' }}
+                    className="overflow-hidden rounded-2xl border border-zinc-700/50 bg-zinc-900/92 shadow-xl backdrop-blur-md"
+                  >
                     <button
                       onClick={() => setVerMacrociclo((v) => !v)}
                       className="flex w-full items-center justify-between px-4 py-3.5 text-left transition-colors hover:bg-white/[0.03]"

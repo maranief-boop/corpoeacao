@@ -34,6 +34,19 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Garante contraste perfeito em campos com fundo escuro prevenindo sobrescritas de autofill */
+input.bg-zinc-800,
+input.bg-slate-950,
+input[type="password"].bg-zinc-800 {
+  background-color: #27272a !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+input.bg-zinc-800::placeholder {
+  color: #a1a1aa !important;
+  -webkit-text-fill-color: #a1a1aa !important;
+}
+
 /* Scrollbar sutil */
 ::-webkit-scrollbar {
   width: 8px;

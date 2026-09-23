@@ -2,7 +2,7 @@
 export default {
   // Modo escuro controlado pela classe "dark" no <html> (alternância nativa)
   darkMode: 'class',
-  content: ['./index.html', './src/**/*.{js,jsx}'],
+  content: ['./index.html', './admin.html', './src/**/*.{js,jsx,ts,tsx}'],
   theme: {
     extend: {
       fontFamily: {
