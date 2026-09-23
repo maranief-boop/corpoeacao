@@ -2,7 +2,7 @@
 // Tela de Login — Painel do Gestor (Supabase Auth)
 // =====================================================================
 import { useState } from 'react'
-import { Loader2, Lock, Mail, UserPlus, Eye, EyeOff } from 'lucide-react'
+import { Loader2, Lock as LockIcon, Mail, UserPlus, Eye, EyeOff } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { useToast } from '../components/Toast'
 import { Button, Input, Label, Card } from '../components/ui'
@@ -94,7 +94,7 @@ export default function LoginPage({ auth }) {
             <div>
               <Label>Senha</Label>
               <div className="relative">
-                <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                <LockIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
                 <Input
                   type={mostrarSenha ? 'text' : 'password'}
                   value={senha}
@@ -118,7 +118,7 @@ export default function LoginPage({ auth }) {
               <div>
                 <Label>Confirmar senha</Label>
                 <div className="relative">
-                  <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                  <LockIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
                   <Input
                     type={mostrarSenha ? 'text' : 'password'}
                     value={confirmar}
@@ -176,7 +176,7 @@ export default function LoginPage({ auth }) {
             >
               {modo === 'login' ? (
                 <>
-                  <Lock className="h-4 w-4" />
+                  <LockIcon className="h-4 w-4" />
                   Entrar no painel
                 </>
               ) : (

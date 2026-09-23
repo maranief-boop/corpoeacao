@@ -23,6 +23,7 @@ import {
   Heart,
   ListTree,
   Loader2,
+  Lock as LockIcon,
   LogOut,
   Maximize2,
   Phone,
@@ -1378,7 +1379,7 @@ export default function PortalAluno() {
                   PIN de Acesso
                 </label>
                 <div className="relative">
-                  <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+                  <LockIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
                   <input
                     id="pin"
                     type="password"
@@ -1408,7 +1409,7 @@ export default function PortalAluno() {
                   {buscando ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Lock className="h-4 w-4" />
+                    <LockIcon className="h-4 w-4" />
                   )}
                   {buscando ? 'Verificando...' : 'Entrar'}
                 </button>
