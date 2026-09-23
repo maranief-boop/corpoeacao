@@ -113,9 +113,9 @@ function crc16Pix(payload: string): string {
   return crc.toString(16).toUpperCase().padStart(4, '0')
 }
 
-// Estilo "vidro fosco" premium usado nos cards principais
+// Estilo "vidro fosco" premium usado nos cards principais (alta legibilidade e contraste)
 const VIDRO =
-  'rounded-3xl border border-white/[0.08] bg-zinc-900/85 shadow-[0_8px_32px_rgba(0,0,0,0.45)] ring-1 ring-inset ring-white/[0.06] backdrop-blur-2xl'
+  'rounded-3xl border border-white/15 bg-slate-900/80 shadow-2xl ring-1 ring-inset ring-white/10 backdrop-blur-xl'
 
 // Cabeçalho padrão dos cards: ícone em pílula + título
 function CardHeader({
@@ -159,16 +159,16 @@ function TileCard({
   onAbrir: () => void
 }) {
   const cores: Record<string, string> = {
-    primary: 'bg-primary-500/15 text-primary-300 ring-primary-500/25',
-    emerald: 'bg-emerald-500/15 text-emerald-300 ring-emerald-500/25',
-    amber: 'bg-amber-500/15 text-amber-300 ring-amber-500/25',
-    rose: 'bg-rose-500/15 text-rose-300 ring-rose-500/25'
+    primary: 'bg-primary-500/20 text-primary-300 ring-primary-500/40',
+    emerald: 'bg-emerald-500/20 text-emerald-300 ring-emerald-500/40',
+    amber: 'bg-amber-500/20 text-amber-300 ring-amber-500/40',
+    rose: 'bg-rose-500/20 text-rose-300 ring-rose-500/40'
   }
   return (
     <button
       type="button"
       onClick={onAbrir}
-      className="group flex flex-col gap-1.5 rounded-2xl border border-white/10 bg-white/[0.08] p-3.5 text-left backdrop-blur-lg transition-all duration-300 hover:border-white/25 hover:bg-white/[0.12] active:scale-[0.97]"
+      className="group flex flex-col gap-1.5 rounded-2xl border border-white/15 bg-slate-900/75 p-3.5 text-left shadow-xl backdrop-blur-xl transition-all duration-300 hover:border-white/30 hover:bg-slate-900/90 active:scale-[0.97]"
     >
       <div className="flex items-center justify-between">
         <span
@@ -176,14 +176,14 @@ function TileCard({
         >
           <Icone className="h-4 w-4" />
         </span>
-        <Maximize2 className="h-3.5 w-3.5 text-white/25 transition-all duration-300 group-hover:text-white/60" />
+        <Maximize2 className="h-3.5 w-3.5 text-white/40 transition-all duration-300 group-hover:text-white" />
       </div>
-      <p className="mt-1 text-[10px] font-bold uppercase tracking-wide text-white/50">
+      <p className="mt-1 text-[11px] font-bold uppercase tracking-wider text-zinc-300">
         {titulo}
       </p>
-      {valor && <p className="text-sm font-extrabold leading-tight text-white">{valor}</p>}
+      {valor && <p className="text-base font-black leading-tight text-white drop-shadow-sm">{valor}</p>}
       {subtitulo && (
-        <p className="text-[10px] leading-snug text-white/40">{subtitulo}</p>
+        <p className="text-[11px] font-medium leading-snug text-zinc-300/85">{subtitulo}</p>
       )}
     </button>
   )
@@ -205,11 +205,11 @@ function ModalExpandido({
 }) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-0 backdrop-blur-md sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 p-0 backdrop-blur-md sm:items-center sm:p-4"
       onClick={onFechar}
     >
       <div
-        className={`flex max-h-[92vh] w-full ${largura} flex-col overflow-hidden rounded-t-3xl border border-white/[0.08] bg-[#161616] shadow-[0_24px_64px_rgba(0,0,0,0.6)] ring-1 ring-inset ring-white/[0.06] backdrop-blur-2xl sm:rounded-3xl`}
+        className={`flex max-h-[92vh] w-full ${largura} flex-col overflow-hidden rounded-t-3xl border border-white/15 bg-slate-950/95 shadow-[0_24px_64px_rgba(0,0,0,0.8)] ring-1 ring-inset ring-white/10 backdrop-blur-2xl sm:rounded-3xl`}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -1318,15 +1318,15 @@ export default function PortalAluno() {
           {/* Formulário (vidro) — CPF/Telefone ou PIN */}
           {!pendente ? (
             <form onSubmit={entrar} className="space-y-4">
-              <div className={`${VIDRO} p-5`}>
+              <div className={`${VIDRO} p-6 shadow-2xl`}>
                 <label
                   htmlFor="identificador"
-                  className="mb-1 block text-xs font-semibold uppercase tracking-wide text-white/60"
+                  className="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-300"
                 >
                   CPF ou Telefone
                 </label>
                 <div className="relative">
-                  <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+                  <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-300" />
                   <input
                     id="identificador"
                     value={identificador}
@@ -1334,7 +1334,7 @@ export default function PortalAluno() {
                     placeholder="Ex.: 11999999999"
                     inputMode="tel"
                     autoComplete="tel"
-                    className="w-full rounded-xl border border-white/20 bg-black/60 py-2.5 pl-9 pr-3 text-sm text-white outline-none transition backdrop-blur placeholder:text-zinc-300 focus:border-primary-400 focus:ring-2 focus:ring-primary-500/30 !bg-black"
+                    className="w-full rounded-xl border border-white/20 bg-slate-950/85 py-3 pl-9 pr-3 text-sm font-semibold text-white outline-none transition backdrop-blur-md placeholder:text-zinc-400 focus:border-primary-400 focus:ring-2 focus:ring-primary-500/40 shadow-inner"
                   />
                 </div>
 
@@ -1361,25 +1361,25 @@ export default function PortalAluno() {
             </form>
           ) : (
             <form onSubmit={verificarPin} className="space-y-4">
-              <div className={`${VIDRO} p-5`}>
+              <div className={`${VIDRO} p-6 shadow-2xl`}>
                 <div className="mb-4 flex items-center gap-3">
                   <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-sm font-extrabold ring-1 ring-white/30">
                     {iniciais(pendente.nome)}
                   </span>
                   <div>
-                    <p className="text-sm font-bold">{pendente.nome}</p>
-                    <p className="text-xs text-white/50">Digite seu PIN para entrar</p>
+                    <p className="text-base font-extrabold text-white">{pendente.nome}</p>
+                    <p className="text-xs font-medium text-zinc-300">Digite seu PIN para entrar</p>
                   </div>
                 </div>
 
                 <label
                   htmlFor="pin"
-                  className="mb-1 block text-xs font-semibold uppercase tracking-wide text-white/60"
+                  className="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-300"
                 >
                   PIN de Acesso
                 </label>
                 <div className="relative">
-                  <LockIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+                  <LockIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-300" />
                   <input
                     id="pin"
                     type="password"
@@ -1390,7 +1390,7 @@ export default function PortalAluno() {
                     placeholder="••••"
                     autoFocus
                     autoComplete="off"
-                    className="w-full rounded-xl border border-white/15 bg-white/10 py-2.5 pl-9 pr-3 text-center text-lg tracking-[0.5em] text-white outline-none transition backdrop-blur placeholder:text-white/30 focus:border-primary-400 focus:ring-2 focus:ring-primary-500/30"
+                    className="w-full rounded-xl border border-white/20 bg-slate-950/85 py-3 pl-9 pr-3 text-center text-xl font-bold tracking-[0.5em] text-white outline-none transition backdrop-blur-md placeholder:text-zinc-400 focus:border-primary-400 focus:ring-2 focus:ring-primary-500/40 shadow-inner"
                   />
                 </div>
 
@@ -1768,10 +1768,10 @@ export default function PortalAluno() {
                 {treinos.map((treino) => (
                   <div
                     key={treino.id}
-                    className={`overflow-hidden rounded-2xl border bg-gradient-to-b from-white/[0.11] to-white/[0.06] backdrop-blur-lg transition-all duration-300 hover:border-white/20 ${
+                    className={`overflow-hidden rounded-2xl border bg-slate-900/75 shadow-xl backdrop-blur-xl transition-all duration-300 hover:border-white/25 hover:bg-slate-900/85 ${
                       treinoHoje?.id === treino.id
                         ? 'border-primary-500/40 ring-1 ring-inset ring-primary-500/30'
-                        : 'border-white/10'
+                        : 'border-white/15'
                     }`}
                   >
                     <div className="flex items-center justify-between px-4 py-3">
@@ -1847,7 +1847,7 @@ export default function PortalAluno() {
 
                 {/* -------- Macrociclo (12 semanas) -------- */}
                 {macrociclo.length > 0 && (
-                  <div className="overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.11] to-white/[0.06] backdrop-blur-lg">
+                  <div className="overflow-hidden rounded-2xl border border-white/15 bg-slate-900/75 shadow-xl backdrop-blur-xl">
                     <button
                       onClick={() => setVerMacrociclo((v) => !v)}
                       className="flex w-full items-center justify-between px-4 py-3.5 text-left transition-colors hover:bg-white/[0.03]"
@@ -2410,7 +2410,7 @@ export default function PortalAluno() {
             icon={Wallet}
             onFechar={() => setModalAberto(null)}
           >
-            <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 ring-1 ring-inset ring-white/5">
+            <div className="flex items-center justify-between rounded-2xl border border-white/15 bg-slate-900/80 px-4 py-3.5 shadow-lg ring-1 ring-inset ring-white/10 backdrop-blur-md">
               <div className="flex items-center gap-3">
                 <span
                   className={`flex h-11 w-11 items-center justify-center rounded-xl ring-1 ring-inset ${
@@ -2424,12 +2424,14 @@ export default function PortalAluno() {
                   )}
                 </span>
                 <div>
-                  <p className="text-sm font-bold text-white">
+                  <p className="text-base font-extrabold text-white">
                     {competenciaAtual}
                   </p>
-                  <p className="text-xs text-white/50">
-                    {formatarMoeda(aluno.plano_valor)} ·{' '}
-                    {statusPagamentoAtual.rotulo}
+                  <p className="text-sm font-bold text-emerald-400">
+                    {formatarMoeda(aluno.plano_valor)}{' '}
+                    <span className="text-xs font-medium text-zinc-300">
+                      · {statusPagamentoAtual.rotulo}
+                    </span>
                   </p>
                 </div>
               </div>
@@ -2439,14 +2441,14 @@ export default function PortalAluno() {
               <div className="grid grid-cols-2 gap-2.5">
                 <button
                   onClick={() => setFormaPagamentoAtiva('pix')}
-                  className="flex flex-col items-center gap-2 rounded-2xl border border-white/15 bg-white/5 py-4 text-sm font-bold text-white/80 transition-all duration-300 hover:bg-white/10 active:scale-[0.97]"
+                  className="flex flex-col items-center gap-2 rounded-2xl border border-white/15 bg-slate-900/80 py-4 text-sm font-bold text-white shadow-lg backdrop-blur-md transition-all duration-300 hover:border-white/30 hover:bg-slate-900 active:scale-[0.97]"
                 >
                   <QrCode className="h-6 w-6 text-primary-400" />
                   Pagar com Pix
                 </button>
                 <button
                   onClick={() => setFormaPagamentoAtiva('cartao')}
-                  className="flex flex-col items-center gap-2 rounded-2xl border border-white/15 bg-white/5 py-4 text-sm font-bold text-white/80 transition-all duration-300 hover:bg-white/10 active:scale-[0.97]"
+                  className="flex flex-col items-center gap-2 rounded-2xl border border-white/15 bg-slate-900/80 py-4 text-sm font-bold text-white shadow-lg backdrop-blur-md transition-all duration-300 hover:border-white/30 hover:bg-slate-900 active:scale-[0.97]"
                 >
                   <CreditCard className="h-6 w-6 text-primary-400" />
                   Pagar com Cartão
@@ -2571,11 +2573,11 @@ export default function PortalAluno() {
             )}
 
             <div>
-              <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-white/50">
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-zinc-300">
                 Pagamentos anteriores
               </p>
               {pagamentos.length === 0 ? (
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-5 text-center text-xs text-white/50">
+                <div className="rounded-2xl border border-white/15 bg-slate-900/60 px-4 py-5 text-center text-xs text-zinc-300">
                   Nenhum pagamento registrado ainda.
                 </div>
               ) : (
@@ -2583,13 +2585,13 @@ export default function PortalAluno() {
                   {pagamentos.map((p) => (
                     <li
                       key={p.id}
-                      className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3"
+                      className="flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-slate-900/75 px-4 py-3 shadow-md backdrop-blur-md"
                     >
                       <div>
                         <p className="text-sm font-bold text-white">
                           {FORMATAR_COMPETENCIA(p.competencia)}
                         </p>
-                        <p className="text-[11px] text-white/50">
+                        <p className="text-xs text-zinc-300">
                           {formatarData(p.data_pagamento) || '—'} ·{' '}
                           {p.forma === 'pix'
                             ? 'Pix'
@@ -2599,7 +2601,7 @@ export default function PortalAluno() {
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-extrabold text-white">
+                        <span className="text-base font-black text-white">
                           {formatarMoeda(p.valor)}
                         </span>
                         <span
@@ -2783,12 +2785,12 @@ export default function PortalAluno() {
               ].map(([rotulo, valor]) => (
                 <div
                   key={rotulo}
-                  className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3"
+                  className="flex items-center justify-between rounded-2xl border border-white/15 bg-slate-900/75 px-4 py-3 shadow-md backdrop-blur-md"
                 >
-                  <span className="text-xs font-bold uppercase tracking-wide text-white/50">
+                  <span className="text-xs font-bold uppercase tracking-wider text-zinc-300">
                     {rotulo}
                   </span>
-                  <span className="text-sm font-semibold text-white">
+                  <span className="text-sm font-black text-white">
                     {valor}
                   </span>
                 </div>
@@ -2802,16 +2804,16 @@ export default function PortalAluno() {
                   )
                   return (
                     <div
-                      className={`flex items-center justify-between rounded-2xl border px-4 py-3 ${
+                      className={`flex items-center justify-between rounded-2xl border px-4 py-3 shadow-md backdrop-blur-md ${
                         dias < 0
-                          ? 'border-red-500/30 bg-red-500/10'
-                          : 'border-white/10 bg-white/[0.04]'
+                          ? 'border-red-500/40 bg-red-950/60'
+                          : 'border-white/15 bg-slate-900/75'
                       }`}
                     >
-                      <span className="text-xs font-bold uppercase tracking-wide text-white/50">
+                      <span className="text-xs font-bold uppercase tracking-wider text-zinc-300">
                         Renovação
                       </span>
-                      <span className="text-sm font-semibold text-white">
+                      <span className={`text-sm font-black ${dias < 0 ? 'text-red-300' : 'text-emerald-400'}`}>
                         {dias < 0
                           ? `Vencida há ${Math.abs(dias)} dia(s)`
                           : `Em ${dias} dia(s)`}
@@ -2832,11 +2834,11 @@ export default function PortalAluno() {
           >
             {avaliacao ? (
               <>
-                <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
-                  <span className="text-xs font-bold uppercase tracking-wide text-white/50">
+                <div className="flex items-center justify-between rounded-2xl border border-white/15 bg-slate-900/75 px-4 py-3 shadow-md backdrop-blur-md">
+                  <span className="text-xs font-bold uppercase tracking-wider text-zinc-300">
                     Data da avaliação
                   </span>
-                  <span className="text-sm font-semibold text-white">
+                  <span className="text-sm font-black text-white">
                     {formatarData(avaliacao.data)}
                   </span>
                 </div>
@@ -2845,12 +2847,12 @@ export default function PortalAluno() {
                     ([k, v]) => (
                       <div
                         key={k}
-                        className="rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-3 text-center"
+                        className="rounded-2xl border border-white/15 bg-slate-900/75 px-3 py-3 text-center shadow-md backdrop-blur-md"
                       >
-                        <p className="text-sm font-extrabold text-white">
+                        <p className="text-base font-black text-white">
                           {String(v)}
                         </p>
-                        <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/50">
+                        <p className="mt-0.5 text-[11px] font-bold uppercase tracking-wider text-zinc-300">
                           {k}
                         </p>
                       </div>
@@ -2858,7 +2860,7 @@ export default function PortalAluno() {
                   )}
                 </div>
                 {avaliacao.observacoes && (
-                  <p className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-xs leading-relaxed text-white/60">
+                  <p className="rounded-2xl border border-white/15 bg-slate-900/75 px-4 py-3 text-xs font-medium leading-relaxed text-zinc-200 shadow-md backdrop-blur-md">
                     {avaliacao.observacoes}
                   </p>
                 )}
