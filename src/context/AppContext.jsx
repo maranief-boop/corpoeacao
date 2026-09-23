@@ -20,8 +20,8 @@ const CONFIG_INICIAL = {
   id: 1,
   nome_academia: 'Academia Corpo e Ação',
   logo_url: '/logo.png',
-  cor_primaria: '#16a34a',
-  cor_secundaria: '#059669',
+  cor_primaria: '#DC2626',
+  cor_secundaria: '#2563EB',
   cor_card: 'rgba(24, 24, 27, 0.94)',
   card_bg_style: 'solid', // 'solid' | 'glass'
   fundo_portal_url: '',

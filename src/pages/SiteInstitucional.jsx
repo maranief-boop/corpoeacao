@@ -66,6 +66,8 @@ export default function SiteInstitucional() {
   const { toast } = useToast()
   const { config } = useApp()
   const nomeAcademia = config.nome_academia || 'Academia Corpo e Ação'
+  const corPrimaria = config.cor_primaria || '#DC2626'
+  const corSecundaria = config.cor_secundaria || '#2563EB'
 
   const [menuAberto, setMenuAberto] = useState(false)
   const [modalLead, setModalLead] = useState(false)
@@ -172,18 +174,18 @@ export default function SiteInstitucional() {
   return (
     <div className="bg-[#0f0f0f] font-sans text-white">
       {/* ---------- Header ---------- */}
-      <header className="fixed inset-x-0 top-0 z-40 border-b border-gray-800 bg-[#0a0a0a]/90 backdrop-blur-md">
+      <header className="fixed inset-x-0 top-0 z-40 border-b border-zinc-800/80 bg-[#0a0a0a]/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="flex items-center gap-3 text-lg font-extrabold tracking-tight"
+            className="flex items-center gap-3 text-lg font-extrabold tracking-tight transition-opacity hover:opacity-90"
           >
             <img
               src={config.logo_url || logoAcademia}
               alt={nomeAcademia}
-              className="h-14 w-14 rounded-2xl bg-white object-cover p-1 ring-2 ring-white/30 shadow-lg"
+              className="h-10 w-auto max-h-12 max-w-[150px] object-contain drop-shadow-md"
             />
-            <span className="text-white">{nomeAcademia}</span>
+            <span className="text-white drop-shadow-sm">{nomeAcademia}</span>
           </button>
 
           <nav className="hidden items-center gap-6 text-sm md:flex">
@@ -191,14 +193,15 @@ export default function SiteInstitucional() {
               <button
                 key={n.id}
                 onClick={() => rolarPara(n.id)}
-                className="text-gray-300 transition-colors hover:text-emerald-300"
+                className="text-zinc-300 font-medium transition-colors hover:text-white"
               >
                 {n.rotulo}
               </button>
             ))}
             <button
               onClick={abrirLead}
-              className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-600"
+              style={{ backgroundColor: corPrimaria }}
+              className="rounded-xl px-5 py-2.5 text-sm font-extrabold text-white shadow-lg transition-all duration-300 hover:brightness-110 active:scale-95"
             >
               Agende sua Aula
             </button>
@@ -214,7 +217,7 @@ export default function SiteInstitucional() {
         </div>
 
         {menuAberto && (
-          <div className="flex flex-col gap-3 border-t border-gray-800 bg-[#111] px-4 py-4 text-sm md:hidden">
+          <div className="flex flex-col gap-3 border-t border-zinc-800 bg-[#111] px-4 py-4 text-sm md:hidden">
             {NAV.map((n) => (
               <button
                 key={n.id}
@@ -222,14 +225,15 @@ export default function SiteInstitucional() {
                   setMenuAberto(false)
                   rolarPara(n.id)
                 }}
-                className="py-1 text-left text-gray-300 hover:text-emerald-300"
+                className="py-1 text-left text-zinc-300 font-medium hover:text-white"
               >
                 {n.rotulo}
               </button>
             ))}
             <button
               onClick={abrirLead}
-              className="mt-1 rounded-lg bg-emerald-500 py-2.5 font-bold text-white transition hover:bg-emerald-600"
+              style={{ backgroundColor: corPrimaria }}
+              className="mt-1 rounded-xl py-3 font-extrabold text-white transition hover:brightness-110 active:scale-95"
             >
               Agende sua Aula Experimental
             </button>
@@ -241,26 +245,51 @@ export default function SiteInstitucional() {
       <section
         id="hero"
         className="relative flex min-h-screen items-center overflow-hidden pt-16"
-        style={{ background: `url(${fundoAcademia}) center center / cover no-repeat` }}
+        style={{ background: `url(${config.fundo_portal_url || fundoAcademia}) center center / cover no-repeat` }}
       >
-        <div className="absolute inset-0 bg-black/70" />
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute left-10 top-20 h-72 w-72 rounded-full bg-emerald-500 blur-[120px]" />
-          <div className="absolute bottom-20 right-10 h-96 w-96 rounded-full bg-emerald-600 blur-[150px]" />
+        {/* Camada de sobreposição densa sobre a foto da academia */}
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-zinc-950 via-zinc-950/80 to-transparent" />
+        
+        {/* Luzes dinâmicas de fundo com as cores da marca */}
+        <div className="absolute inset-0 opacity-15 pointer-events-none">
+          <div
+            className="absolute left-10 top-20 h-72 w-72 rounded-full blur-[140px]"
+            style={{ backgroundColor: corPrimaria }}
+          />
+          <div
+            className="absolute bottom-20 right-10 h-96 w-96 rounded-full blur-[160px]"
+            style={{ backgroundColor: corSecundaria }}
+          />
         </div>
+
         <div className="relative z-10 mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
-            <span className="mb-6 inline-block rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-semibold text-emerald-300">
-              <MapPin className="mr-1 inline h-3 w-3" /> Mirandópolis-SP
+            <span
+              style={{
+                backgroundColor: `${corSecundaria}25`,
+                borderColor: `${corSecundaria}50`,
+                color: '#ffffff'
+              }}
+              className="mb-6 inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-xs font-bold shadow-sm"
+            >
+              <MapPin className="h-3.5 w-3.5" style={{ color: corSecundaria }} /> Mirandópolis-SP
             </span>
-            <h1 className="mb-6 text-4xl font-extrabold leading-tight text-white sm:text-5xl lg:text-6xl">
+            <h1 className="mb-6 text-4xl font-extrabold leading-tight text-white sm:text-5xl lg:text-6xl drop-shadow-md">
               Transforme seu corpo e sua saúde
               <br />
-              <span className="bg-gradient-to-r from-emerald-400 to-lime-400 bg-clip-text text-transparent">
+              <span
+                style={{
+                  backgroundImage: `linear-gradient(to right, ${corPrimaria}, ${corSecundaria})`,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                }}
+                className="bg-clip-text text-transparent font-black"
+              >
                 no coração de Mirandópolis
               </span>
             </h1>
-            <p className="mb-8 max-w-2xl text-lg leading-relaxed text-gray-400 sm:text-xl">
+            <p className="mb-8 max-w-2xl text-lg font-medium leading-relaxed text-zinc-200 drop-shadow-md sm:text-xl">
               Metodologia comprovada para resultados reais. Equipamentos modernos,
               ambiente climatizado e profissionais qualificados prontos para te
               acompanhar do início ao fim.
@@ -268,28 +297,29 @@ export default function SiteInstitucional() {
             <div className="flex flex-col gap-4 sm:flex-row">
               <button
                 onClick={abrirLead}
-                className="inline-flex items-center justify-center gap-3 rounded-xl bg-emerald-500 px-8 py-4 text-lg font-bold text-white shadow-xl shadow-emerald-500/30 transition hover:bg-emerald-600 hover:shadow-emerald-500/50"
+                style={{ backgroundColor: corPrimaria }}
+                className="inline-flex items-center justify-center gap-3 rounded-xl px-8 py-4 text-lg font-extrabold text-white shadow-xl transition-all duration-300 hover:brightness-110 hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98]"
               >
                 <MessageCircle className="h-5 w-5" /> Agende sua Aula Experimental
               </button>
               <button
                 onClick={() => rolarPara('modalidades')}
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-600 px-8 py-4 text-lg font-medium text-gray-300 transition hover:border-emerald-400 hover:text-emerald-300"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900/60 px-8 py-4 text-lg font-semibold text-zinc-200 backdrop-blur-sm transition-all duration-300 hover:border-zinc-500 hover:text-white hover:bg-zinc-800/80 active:scale-[0.98]"
               >
                 Ver Modalidades <ArrowDown className="h-4 w-4" />
               </button>
             </div>
-            <div className="mt-12 flex flex-wrap gap-6 text-sm text-gray-500">
-              <span>
-                <CheckCircle2 className="mr-1 inline h-4 w-4 text-emerald-400" /> Seg a
+            <div className="mt-12 flex flex-wrap gap-6 text-sm text-zinc-300 font-medium">
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="h-4 w-4" style={{ color: corSecundaria }} /> Seg a
                 Sex · 07h às 20h
               </span>
-              <span>
-                <CheckCircle2 className="mr-1 inline h-4 w-4 text-emerald-400" /> Aula
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="h-4 w-4" style={{ color: corSecundaria }} /> Aula
                 experimental gratuita
               </span>
-              <span>
-                <CheckCircle2 className="mr-1 inline h-4 w-4 text-emerald-400" /> Ambiente
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="h-4 w-4" style={{ color: corSecundaria }} /> Ambiente
                 climatizado
               </span>
             </div>
@@ -301,13 +331,16 @@ export default function SiteInstitucional() {
       <section id="modalidades" className="bg-[#0f0f0f] py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-14 text-center">
-            <span className="text-sm font-semibold uppercase tracking-widest text-emerald-400">
+            <span
+              style={{ color: corSecundaria }}
+              className="text-xs font-bold uppercase tracking-widest"
+            >
               Nossas Modalidades
             </span>
-            <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl">
+            <h2 className="mt-2 text-3xl font-extrabold text-white sm:text-4xl">
               Escolha o treino ideal para você
             </h2>
-            <p className="mx-auto mt-3 max-w-xl text-gray-400">
+            <p className="mx-auto mt-3 max-w-xl text-zinc-400 font-medium">
               Do clássico ao moderno, temos a modalidade certa para seu objetivo.
             </p>
           </div>
@@ -337,18 +370,24 @@ export default function SiteInstitucional() {
             ].map((m) => (
               <div
                 key={m.titulo}
-                className="rounded-2xl border border-gray-800 bg-[#1a1a1a] p-8 text-center transition hover:-translate-y-1 hover:border-emerald-500/40"
+                className="group rounded-2xl border border-zinc-800 bg-[#1a1a1a] p-8 text-center shadow-xl hover:scale-[1.02] hover:border-zinc-700 transition-all duration-300"
               >
-                <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 text-3xl text-emerald-400">
+                <div
+                  style={{
+                    backgroundColor: `${corPrimaria}18`,
+                    color: corPrimaria
+                  }}
+                  className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full ring-1 ring-inset ring-white/10 transition-transform duration-300 group-hover:scale-110"
+                >
                   <m.icone className="h-7 w-7" />
                 </div>
                 <h3 className="mb-3 text-xl font-bold text-white">{m.titulo}</h3>
-                <p className="mb-5 text-sm leading-relaxed text-gray-400">{m.texto}</p>
-                <ul className="space-y-1.5 text-xs text-gray-500">
+                <p className="mb-5 text-sm leading-relaxed text-zinc-400">{m.texto}</p>
+                <ul className="space-y-1.5 text-xs text-zinc-400">
                   {m.itens.map((i) => (
-                    <li key={i}>
-                      <CheckCircle2 className="mr-1.5 inline h-3.5 w-3.5 text-emerald-400" />
-                      {i}
+                    <li key={i} className="flex items-center justify-center gap-1.5">
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0" style={{ color: corSecundaria }} />
+                      <span>{i}</span>
                     </li>
                   ))}
                 </ul>
@@ -362,10 +401,13 @@ export default function SiteInstitucional() {
       <section id="estrutura" className="bg-[#0a0a0a] py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-14 text-center">
-            <span className="text-sm font-semibold uppercase tracking-widest text-emerald-400">
+            <span
+              style={{ color: corSecundaria }}
+              className="text-xs font-bold uppercase tracking-widest"
+            >
               Nossa Estrutura
             </span>
-            <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl">
+            <h2 className="mt-2 text-3xl font-extrabold text-white sm:text-4xl">
               Diferenciais que fazem a diferença
             </h2>
           </div>
@@ -378,11 +420,14 @@ export default function SiteInstitucional() {
             ].map((e) => (
               <div
                 key={e.titulo}
-                className="rounded-xl border border-gray-800 bg-[#1a1a1a] p-6 text-center transition hover:-translate-y-1 hover:border-emerald-500/40"
+                className="group rounded-xl border border-zinc-800 bg-[#1a1a1a] p-6 text-center shadow-lg transition-all duration-300 hover:scale-[1.03] hover:border-zinc-700"
               >
-                <e.icone className="mb-3 h-8 w-8 text-emerald-400" />
+                <e.icone
+                  className="mx-auto mb-3 h-8 w-8 transition-transform duration-300 group-hover:scale-110"
+                  style={{ color: corSecundaria }}
+                />
                 <h3 className="mb-1 text-sm font-bold text-white">{e.titulo}</h3>
-                <p className="text-xs text-gray-500">{e.texto}</p>
+                <p className="text-xs text-zinc-400">{e.texto}</p>
               </div>
             ))}
           </div>
@@ -393,10 +438,13 @@ export default function SiteInstitucional() {
       <section id="depoimentos" className="bg-[#0f0f0f] py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-14 text-center">
-            <span className="text-sm font-semibold uppercase tracking-widest text-emerald-400">
+            <span
+              style={{ color: corSecundaria }}
+              className="text-xs font-bold uppercase tracking-widest"
+            >
               Depoimentos
             </span>
-            <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl">
+            <h2 className="mt-2 text-3xl font-extrabold text-white sm:text-4xl">
               Quem treina aqui recomenda
             </h2>
           </div>
@@ -426,17 +474,23 @@ export default function SiteInstitucional() {
             ].map((d) => (
               <div
                 key={d.nome}
-                className="rounded-2xl border border-gray-800 bg-[#1a1a1a] p-6 transition hover:-translate-y-1 hover:border-emerald-500/40"
+                className="rounded-2xl border border-zinc-800 bg-[#1a1a1a] p-6 shadow-lg transition-all duration-300 hover:scale-[1.02] hover:border-zinc-700"
               >
                 <Estrelas />
-                <p className="mb-4 text-sm leading-relaxed text-gray-300">{d.texto}</p>
+                <p className="mb-4 text-sm leading-relaxed text-zinc-300">{d.texto}</p>
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/20 text-sm font-bold text-emerald-400">
+                  <div
+                    style={{
+                      backgroundColor: `${corSecundaria}25`,
+                      color: corSecundaria
+                    }}
+                    className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-black ring-1 ring-inset ring-white/10"
+                  >
                     {d.iniciais}
                   </div>
                   <div>
                     <strong className="text-sm text-white">{d.nome}</strong>
-                    <span className="block text-xs text-gray-500">{d.periodo}</span>
+                    <span className="block text-xs text-zinc-400">{d.periodo}</span>
                   </div>
                 </div>
               </div>
@@ -449,20 +503,23 @@ export default function SiteInstitucional() {
       <section id="calculadora" className="bg-[#0a0a0a] py-20">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
-            <span className="text-sm font-semibold uppercase tracking-widest text-emerald-400">
+            <span
+              style={{ color: corSecundaria }}
+              className="text-xs font-bold uppercase tracking-widest"
+            >
               Ferramenta Interativa
             </span>
-            <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl">
+            <h2 className="mt-2 text-3xl font-extrabold text-white sm:text-4xl">
               Calculadora de IMC
             </h2>
-            <p className="mt-3 text-gray-400">
+            <p className="mt-3 text-zinc-400">
               Descubra seu Índice de Massa Corporal e receba uma recomendação de treino.
             </p>
           </div>
-          <div className="rounded-2xl border border-gray-800 bg-[#161616] p-8 sm:p-10">
+          <div className="rounded-2xl border border-zinc-800 bg-[#161616] p-8 shadow-xl sm:p-10">
             <div className="mb-6 grid gap-6 sm:grid-cols-2">
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-400">
+                <label className="mb-2 block text-sm font-medium text-zinc-400">
                   Altura (cm)
                 </label>
                 <input
@@ -471,11 +528,11 @@ export default function SiteInstitucional() {
                   min={100}
                   max={250}
                   onChange={(e) => setAltura(Number(e.target.value))}
-                  className="w-full rounded-xl border border-gray-700 bg-[#1f2937] px-4 py-3 text-white outline-none transition focus:border-emerald-500"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-3 text-white outline-none transition focus:border-zinc-500"
                 />
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-400">
+                <label className="mb-2 block text-sm font-medium text-zinc-400">
                   Peso (kg)
                 </label>
                 <input
@@ -484,12 +541,12 @@ export default function SiteInstitucional() {
                   min={30}
                   max={250}
                   onChange={(e) => setPeso(Number(e.target.value))}
-                  className="w-full rounded-xl border border-gray-700 bg-[#1f2937] px-4 py-3 text-white outline-none transition focus:border-emerald-500"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-3 text-white outline-none transition focus:border-zinc-500"
                 />
               </div>
             </div>
             <div className="mb-8">
-              <label className="mb-2 block text-sm font-medium text-gray-400">
+              <label className="mb-2 block text-sm font-medium text-zinc-400">
                 Idade: <span className="font-bold text-white">{idade}</span> anos
               </label>
               <input
@@ -498,32 +555,35 @@ export default function SiteInstitucional() {
                 max={80}
                 value={idade}
                 onChange={(e) => setIdade(Number(e.target.value))}
-                className="w-full accent-emerald-500"
+                style={{ accentColor: corPrimaria }}
+                className="w-full"
               />
             </div>
             <button
               onClick={calcularImc}
-              className="w-full rounded-xl bg-emerald-500 py-3.5 text-lg font-bold text-white shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-600"
+              style={{ backgroundColor: corPrimaria }}
+              className="w-full rounded-xl py-3.5 text-lg font-extrabold text-white shadow-lg transition hover:brightness-110 active:scale-98"
             >
               <Calculator className="mr-2 inline h-5 w-5" /> Calcular IMC
             </button>
             {resultadoImc && (
               <div className="mt-6">
-                <div className="rounded-xl bg-[#1f2937] p-5 text-center">
-                  <p className="text-sm text-gray-400">Seu IMC é</p>
-                  <p className="mt-1 text-4xl font-extrabold text-white">
+                <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5 text-center">
+                  <p className="text-sm text-zinc-400">Seu IMC é</p>
+                  <p className="mt-1 text-4xl font-black text-white">
                     {resultadoImc.imc}
                   </p>
-                  <p className="mt-1 font-semibold text-emerald-300">
+                  <p className="mt-1 font-bold" style={{ color: corSecundaria }}>
                     {resultadoImc.classificacao}
                   </p>
-                  <p className="mt-3 text-sm text-gray-400">
+                  <p className="mt-3 text-sm text-zinc-300">
                     {resultadoImc.recomendacao}
                   </p>
                 </div>
                 <button
                   onClick={abrirLead}
-                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-lime-500 py-3.5 text-lg font-bold text-white shadow-lg shadow-emerald-500/30 transition hover:from-emerald-600 hover:to-lime-600"
+                  style={{ backgroundColor: corPrimaria }}
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-lg font-extrabold text-white shadow-lg transition hover:brightness-110 active:scale-98"
                 >
                   <MessageCircle className="h-5 w-5" /> Quero minha Aula Experimental
                 </button>
@@ -537,14 +597,17 @@ export default function SiteInstitucional() {
       <section className="bg-[#0f0f0f] py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-10 text-center">
-            <span className="text-sm font-semibold uppercase tracking-widest text-emerald-400">
+            <span
+              style={{ color: corSecundaria }}
+              className="text-xs font-bold uppercase tracking-widest"
+            >
               Onde Estamos
             </span>
-            <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl">
+            <h2 className="mt-2 text-3xl font-extrabold text-white sm:text-4xl">
               Venha nos conhecer
             </h2>
           </div>
-          <div className="overflow-hidden rounded-2xl border border-gray-800 shadow-xl">
+          <div className="overflow-hidden rounded-2xl border border-zinc-800 shadow-xl">
             <iframe
               title="Mapa - Academia Corpo e Ação, Mirandópolis SP"
               src="https://maps.google.com/maps?q=R.%20Rui%20Barbosa%2C%20603%20-%20Centro%2C%20Mirand%C3%B3polis%20-%20SP%2C%2016800-000&t=&z=17&ie=UTF8&iwloc=&output=embed"
@@ -560,7 +623,7 @@ export default function SiteInstitucional() {
       </section>
 
       {/* ---------- Footer ---------- */}
-      <footer className="border-t border-gray-800 bg-[#0a0a0a] pb-8 pt-16">
+      <footer className="border-t border-zinc-800 bg-[#0a0a0a] pb-8 pt-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 grid gap-10 md:grid-cols-4">
             <div>
@@ -568,11 +631,11 @@ export default function SiteInstitucional() {
                 <img
                   src={config.logo_url || logoAcademia}
                   alt={nomeAcademia}
-                  className="h-14 w-14 rounded-2xl bg-white object-cover p-1 ring-2 ring-white/30 shadow-lg"
+                  className="h-10 w-auto max-h-12 max-w-[150px] object-contain drop-shadow-md"
                 />
-                <span className="text-white">{nomeAcademia}</span>
+                <span className="text-white drop-shadow-sm">{nomeAcademia}</span>
               </div>
-              <p className="text-sm leading-relaxed text-gray-500">
+              <p className="text-sm leading-relaxed text-zinc-400">
                 Sua academia de referência. Transformando vidas através do movimento.
               </p>
               <div className="mt-5 flex gap-3">
@@ -595,7 +658,7 @@ export default function SiteInstitucional() {
                     href={s.link}
                     target={s.link !== '#' ? '_blank' : undefined}
                     rel="noreferrer"
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-800 text-gray-400 transition hover:bg-emerald-500 hover:text-white"
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-800 text-zinc-400 transition hover:bg-zinc-700 hover:text-white"
                     aria-label={s.rotulo}
                   >
                     <s.icone className="h-4 w-4" />
@@ -605,12 +668,12 @@ export default function SiteInstitucional() {
             </div>
             <div>
               <h4 className="mb-4 font-bold text-white">Modalidades</h4>
-              <ul className="space-y-2.5 text-sm text-gray-500">
+              <ul className="space-y-2.5 text-sm text-zinc-400">
                 {['Musculação', 'HIIT', 'Jump', 'Spinning', 'Localizada'].map((m) => (
                   <li key={m}>
                     <button
                       onClick={() => rolarPara('modalidades')}
-                      className="transition-colors hover:text-emerald-300"
+                      className="transition-colors hover:text-white"
                     >
                       {m}
                     </button>
@@ -620,37 +683,37 @@ export default function SiteInstitucional() {
             </div>
             <div>
               <h4 className="mb-4 font-bold text-white">Horários</h4>
-              <ul className="space-y-2.5 text-sm text-gray-500">
+              <ul className="space-y-2.5 text-sm text-zinc-400">
                 <li>
-                  <Clock className="mr-1 inline h-3.5 w-3.5 text-emerald-400" />
-                  <span className="text-gray-400">Seg a Sex:</span> 07h - 20h
+                  <Clock className="mr-1.5 inline h-3.5 w-3.5" style={{ color: corSecundaria }} />
+                  <span className="text-zinc-300">Seg a Sex:</span> 07h - 20h
                 </li>
                 <li>
-                  <Clock className="mr-1 inline h-3.5 w-3.5 text-emerald-400" />
-                  <span className="text-gray-400">Sábado:</span> Fechado
+                  <Clock className="mr-1.5 inline h-3.5 w-3.5" style={{ color: corSecundaria }} />
+                  <span className="text-zinc-300">Sábado:</span> Fechado
                 </li>
                 <li>
-                  <Clock className="mr-1 inline h-3.5 w-3.5 text-emerald-400" />
-                  <span className="text-gray-400">Domingo:</span> Fechado
+                  <Clock className="mr-1.5 inline h-3.5 w-3.5" style={{ color: corSecundaria }} />
+                  <span className="text-zinc-300">Domingo:</span> Fechado
                 </li>
-                <li className="pt-2 text-xs text-gray-600">
+                <li className="pt-2 text-xs text-zinc-500">
                   * Feriados com horário especial
                 </li>
               </ul>
             </div>
             <div>
               <h4 className="mb-4 font-bold text-white">Endereço</h4>
-              <address className="text-sm leading-relaxed text-gray-500 not-italic">
-                <MapPin className="mr-1 inline h-3.5 w-3.5 text-emerald-400" />
+              <address className="text-sm leading-relaxed text-zinc-400 not-italic">
+                <MapPin className="mr-1.5 inline h-3.5 w-3.5" style={{ color: corSecundaria }} />
                 {config.endereco || 'R. Rui Barbosa, 603, Centro, Mirandópolis - SP'}
               </address>
-              <p className="mt-3 text-sm text-gray-500">
-                <Phone className="mr-1 inline h-3.5 w-3.5 text-emerald-400" />{' '}
+              <p className="mt-3 text-sm text-zinc-400">
+                <Phone className="mr-1.5 inline h-3.5 w-3.5" style={{ color: corSecundaria }} />{' '}
                 {config.whatsapp || '(18) 98109-3334'}
               </p>
             </div>
           </div>
-          <div className="border-t border-gray-800 pt-6 text-center text-xs text-gray-600">
+          <div className="border-t border-zinc-800 pt-6 text-center text-xs text-zinc-500">
             <p>
               © {new Date().getFullYear()} {nomeAcademia}. Todos os direitos
               reservados.
@@ -659,34 +722,37 @@ export default function SiteInstitucional() {
         </div>
       </footer>
 
-      {/* ---------- WhatsApp float ---------- */}
-      <button
-        onClick={abrirLead}
-        className="fixed bottom-24 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-green-500 text-white shadow-xl shadow-green-500/30 transition hover:scale-105 hover:bg-green-600 md:bottom-6"
-        aria-label="Fale conosco pelo WhatsApp"
-      >
-        <MessageCircle className="h-7 w-7" />
-      </button>
+      {/* ---------- WhatsApp float pulsante ---------- */}
+      <div className="fixed bottom-24 right-4 z-40 md:bottom-6">
+        <span className="absolute -inset-1 animate-ping rounded-full bg-green-500 opacity-60 pointer-events-none" />
+        <button
+          onClick={abrirLead}
+          className="relative flex h-14 w-14 items-center justify-center rounded-full bg-green-500 text-white shadow-2xl shadow-green-500/50 transition-transform duration-300 hover:scale-110 active:scale-95 animate-pulse"
+          aria-label="Fale conosco pelo WhatsApp"
+        >
+          <MessageCircle className="h-7 w-7" />
+        </button>
+      </div>
 
       {/* ---------- Modal de lead ---------- */}
       {modalLead && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
           onClick={() => !salvando && setModalLead(false)}
         >
           <div
-            className="w-full max-w-md overflow-hidden rounded-2xl border border-gray-800 bg-[#111]"
+            className="w-full max-w-md overflow-hidden rounded-2xl border border-zinc-800 bg-[#111] shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-gray-800 px-6 py-4">
-              <h3 className="text-lg font-bold text-white">
-                <CalendarDays className="mr-2 inline h-5 w-5 text-emerald-400" />
+            <div className="flex items-center justify-between border-b border-zinc-800 px-6 py-4">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <CalendarDays className="h-5 w-5" style={{ color: corSecundaria }} />
                 Agende sua Aula Experimental
               </h3>
               <button
                 onClick={() => setModalLead(false)}
                 disabled={salvando}
-                className="text-gray-500 transition hover:text-white"
+                className="text-zinc-400 transition hover:text-white"
                 aria-label="Fechar"
               >
                 <X className="h-5 w-5" />
@@ -695,7 +761,7 @@ export default function SiteInstitucional() {
 
             <form onSubmit={enviarLead} className="space-y-4 px-6 py-5">
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-gray-400">
+                <label className="mb-1.5 block text-xs font-medium text-zinc-400">
                   Seu nome completo
                 </label>
                 <input
@@ -703,11 +769,11 @@ export default function SiteInstitucional() {
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
                   placeholder="Nome"
-                  className="w-full rounded-xl border border-gray-700 bg-[#1a1a1a] px-4 py-2.5 text-white outline-none transition placeholder:text-gray-600 focus:border-emerald-500"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-850 px-4 py-2.5 text-white outline-none transition placeholder:text-zinc-600 focus:border-zinc-500"
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-gray-400">
+                <label className="mb-1.5 block text-xs font-medium text-zinc-400">
                   WhatsApp com DDD
                 </label>
                 <input
@@ -715,11 +781,11 @@ export default function SiteInstitucional() {
                   value={telefone}
                   onChange={(e) => setTelefone(e.target.value)}
                   placeholder="(00) 00000-0000"
-                  className="w-full rounded-xl border border-gray-700 bg-[#1a1a1a] px-4 py-2.5 text-white outline-none transition placeholder:text-gray-600 focus:border-emerald-500"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-850 px-4 py-2.5 text-white outline-none transition placeholder:text-zinc-600 focus:border-zinc-500"
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-gray-400">
+                <label className="mb-1.5 block text-xs font-medium text-zinc-400">
                   Data preferida (opcional)
                 </label>
                 <input
@@ -727,15 +793,15 @@ export default function SiteInstitucional() {
                   value={data}
                   min={hoje}
                   onChange={(e) => setData(e.target.value)}
-                  className="w-full rounded-xl border border-gray-700 bg-[#1a1a1a] px-4 py-2.5 text-white outline-none transition [color-scheme:dark] focus:border-emerald-500"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-850 px-4 py-2.5 text-white outline-none transition [color-scheme:dark] focus:border-zinc-500"
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-gray-400">
+                <label className="mb-1.5 block text-xs font-medium text-zinc-400">
                   Melhor horário (opcional)
                 </label>
                 {carregandoHorarios && (
-                  <p className="mb-2 text-xs text-gray-500">Verificando horários...</p>
+                  <p className="mb-2 text-xs text-zinc-500">Verificando horários...</p>
                 )}
                 <div className="flex flex-wrap gap-2">
                   {HORARIOS.map((h) => {
@@ -747,12 +813,13 @@ export default function SiteInstitucional() {
                         type="button"
                         onClick={() => !ocupado && setHorario(ocupado ? horario : h)}
                         disabled={ocupado}
+                        style={selecionado ? { backgroundColor: corPrimaria, borderColor: corPrimaria } : {}}
                         className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition ${
                           ocupado
-                            ? 'cursor-not-allowed border-red-800 bg-red-900/30 text-red-500/50 line-through'
+                            ? 'cursor-not-allowed border-red-800/40 bg-red-900/20 text-red-500/40 line-through'
                             : selecionado
-                              ? 'border-emerald-500 bg-emerald-500 text-white'
-                              : 'border-gray-700 text-gray-400 hover:border-emerald-500/60 hover:text-emerald-300'
+                              ? 'text-white shadow-md'
+                              : 'border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white'
                         }`}
                         title={ocupado ? 'Este horário já está agendado' : h}
                       >
@@ -772,7 +839,8 @@ export default function SiteInstitucional() {
               <button
                 type="submit"
                 disabled={salvando}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 py-3 font-bold text-white shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-600 disabled:opacity-60"
+                style={{ backgroundColor: corPrimaria }}
+                className="flex w-full items-center justify-center gap-2 rounded-xl py-3 font-bold text-white shadow-lg transition hover:brightness-110 disabled:opacity-60"
               >
                 {salvando ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
