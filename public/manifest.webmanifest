@@ -1,7 +1,7 @@
 {
-  "name": "Sistema Academia",
-  "short_name": "Academia",
-  "description": "Gestão para academias de bairro e estúdios de personal trainer",
+  "name": "Academia Corpo e Ação",
+  "short_name": "Corpo e Ação",
+  "description": "Gestão, portal do aluno e site institucional da Academia Corpo e Ação — Mirandópolis-SP",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -10,6 +10,12 @@
   "theme_color": "#16a34a",
   "lang": "pt-BR",
   "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "icon.svg",
       "sizes": "any",
