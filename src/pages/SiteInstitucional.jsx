@@ -179,7 +179,7 @@ export default function SiteInstitucional() {
             className="flex items-center gap-3 text-lg font-extrabold tracking-tight"
           >
             <img
-              src={logoAcademia}
+              src={config.logo_url || logoAcademia}
               alt={nomeAcademia}
               className="h-14 w-14 rounded-2xl bg-white object-cover p-1 ring-2 ring-white/30 shadow-lg"
             />
@@ -566,26 +566,35 @@ export default function SiteInstitucional() {
             <div>
               <div className="mb-4 flex items-center gap-3 text-lg font-extrabold tracking-tight">
                 <img
-                  src={logoAcademia}
+                  src={config.logo_url || logoAcademia}
                   alt={nomeAcademia}
                   className="h-14 w-14 rounded-2xl bg-white object-cover p-1 ring-2 ring-white/30 shadow-lg"
                 />
                 <span className="text-white">{nomeAcademia}</span>
               </div>
               <p className="text-sm leading-relaxed text-gray-500">
-                Sua academia de referência em Mirandópolis-SP. Transformando vidas
-                através do movimento.
+                Sua academia de referência. Transformando vidas através do movimento.
               </p>
               <div className="mt-5 flex gap-3">
                 {[
-                  { icone: Instagram, rotulo: 'Instagram' },
-                  { icone: Facebook, rotulo: 'Facebook' },
-                  { icone: Youtube, rotulo: 'YouTube' },
-                  { icone: Clapperboard, rotulo: 'TikTok' }
+                  {
+                    icone: Instagram,
+                    rotulo: 'Instagram',
+                    link: config.instagram
+                      ? config.instagram.startsWith('http')
+                        ? config.instagram
+                        : `https://instagram.com/${config.instagram.replace('@', '')}`
+                      : '#'
+                  },
+                  { icone: Facebook, rotulo: 'Facebook', link: '#' },
+                  { icone: Youtube, rotulo: 'YouTube', link: '#' },
+                  { icone: Clapperboard, rotulo: 'TikTok', link: '#' }
                 ].map((s) => (
                   <a
                     key={s.rotulo}
-                    href="#"
+                    href={s.link}
+                    target={s.link !== '#' ? '_blank' : undefined}
+                    rel="noreferrer"
                     className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-800 text-gray-400 transition hover:bg-emerald-500 hover:text-white"
                     aria-label={s.rotulo}
                   >
@@ -633,15 +642,11 @@ export default function SiteInstitucional() {
               <h4 className="mb-4 font-bold text-white">Endereço</h4>
               <address className="text-sm leading-relaxed text-gray-500 not-italic">
                 <MapPin className="mr-1 inline h-3.5 w-3.5 text-emerald-400" />
-                R. Rui Barbosa, 603
-                <br />
-                Centro, Mirandópolis - SP
-                <br />
-                CEP 16800-000
+                {config.endereco || 'R. Rui Barbosa, 603, Centro, Mirandópolis - SP'}
               </address>
               <p className="mt-3 text-sm text-gray-500">
-                <Phone className="mr-1 inline h-3.5 w-3.5 text-emerald-400" /> (18)
-                98109-3334
+                <Phone className="mr-1 inline h-3.5 w-3.5 text-emerald-400" />{' '}
+                {config.whatsapp || '(18) 98109-3334'}
               </p>
             </div>
           </div>

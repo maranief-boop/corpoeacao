@@ -325,6 +325,41 @@ create table if not exists public.macrociclo (
   updated_at   timestamptz not null default now()
 );
 
+-- ---------------------------------------------------------------------
+-- Tabela: configuracoes (White-label e personalização do sistema)
+-- ---------------------------------------------------------------------
+create table if not exists public.configuracoes (
+  id                integer primary key default 1,
+  nome_academia     text not null default 'Academia Corpo e Ação',
+  logo_url          text default '/logo.png',
+  cor_primaria      text not null default '#16a34a',
+  cor_secundaria    text default '#059669',
+  cor_card          text default 'rgba(24, 24, 27, 0.94)',
+  card_bg_style     text default 'solid',
+  fundo_portal_url  text,
+  favicon_url       text,
+  whatsapp          text default '(18) 98109-3334',
+  instagram         text default '@academia.corpoeacao',
+  endereco          text default 'R. Rui Barbosa, 603, Centro, Mirandópolis - SP',
+  updated_at        timestamptz not null default now()
+);
+
+-- Para bancos já existentes: garante as colunas novas
+alter table public.configuracoes add column if not exists cor_secundaria text default '#059669';
+alter table public.configuracoes add column if not exists cor_card text default 'rgba(24, 24, 27, 0.94)';
+alter table public.configuracoes add column if not exists card_bg_style text default 'solid';
+alter table public.configuracoes add column if not exists fundo_portal_url text;
+alter table public.configuracoes add column if not exists favicon_url text;
+alter table public.configuracoes add column if not exists whatsapp text default '(18) 98109-3334';
+alter table public.configuracoes add column if not exists instagram text default '@academia.corpoeacao';
+alter table public.configuracoes add column if not exists endereco text default 'R. Rui Barbosa, 603, Centro, Mirandópolis - SP';
+
+-- Inserção inicial se a tabela estiver vazia
+insert into public.configuracoes (id, nome_academia, logo_url, cor_primaria, cor_secundaria)
+values (1, 'Academia Corpo e Ação', '/logo.png', '#16a34a', '#059669')
+on conflict (id) do nothing;
+
+
 -- =====================================================================
 -- ROW LEVEL SECURITY (RLS) — Políticas de segurança
 -- =====================================================================
@@ -490,6 +525,26 @@ create policy "Site: inserir leads"
 -- 3. Adicionar rate limiting nas inserções de leads e checkins
 -- 4. Usar Supabase Auth para o portal do aluno (em vez de login por CPF/telefone)
 -- ---------------------------------------------------------------------
+
+-- ---------------------------------------------------------------------
+-- SUPABASE STORAGE: Bucket 'branding' (público para logos e fundos)
+-- ---------------------------------------------------------------------
+insert into storage.buckets (id, name, public)
+values ('branding', 'branding', true)
+on conflict (id) do update set public = true;
+
+create policy "Branding: leitura publica"
+  on storage.objects for select
+  using (bucket_id = 'branding');
+
+create policy "Branding: upload permitido"
+  on storage.objects for insert
+  with check (bucket_id = 'branding');
+
+create policy "Branding: atualizacao permitida"
+  on storage.objects for update
+  using (bucket_id = 'branding')
+  with check (bucket_id = 'branding');
 
 -- IMPORTANTE: recarrega o cache de schema do PostgREST para que as colunas
 -- e tabelas novas fiquem disponíveis IMEDIATAMENTE via API.

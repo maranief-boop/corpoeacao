@@ -23,8 +23,10 @@ import {
   Heart,
   ListTree,
   Loader2,
+  Instagram,
   Lock as LockIcon,
   LogOut,
+  MapPin,
   Maximize2,
   Phone,
   PlayCircle,
@@ -155,25 +157,43 @@ function TileCard({
   titulo: string
   valor?: string
   subtitulo?: string
-  cor?: 'primary' | 'emerald' | 'amber' | 'rose'
+  cor?: 'primary' | 'secondary' | 'emerald' | 'amber' | 'rose'
   onAbrir: () => void
 }) {
+  const { config } = useApp()
+  const isGlass = config?.card_bg_style === 'glass'
   const cores: Record<string, string> = {
     primary: 'bg-primary-500/20 text-primary-300 ring-primary-500/40',
+    secondary: 'bg-secondary-500/20 text-secondary-300 ring-secondary-500/40',
     emerald: 'bg-emerald-500/20 text-emerald-300 ring-emerald-500/40',
     amber: 'bg-amber-500/20 text-amber-300 ring-amber-500/40',
     rose: 'bg-rose-500/20 text-rose-300 ring-rose-500/40'
   }
+  const tileStyle = isGlass
+    ? {
+        backgroundColor: 'rgba(0, 0, 0, 0.65)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        borderColor: 'rgba(255, 255, 255, 0.15)'
+      }
+    : {
+        backgroundColor: config?.cor_card || 'rgba(24, 24, 27, 0.94)',
+        borderColor: 'rgba(63, 63, 70, 0.5)'
+      }
   return (
     <button
       type="button"
       onClick={onAbrir}
-      style={{ backgroundColor: 'rgba(24, 24, 27, 0.94)', borderColor: 'rgba(63, 63, 70, 0.5)' }}
-      className="group flex flex-col gap-1.5 rounded-2xl border border-zinc-700/50 bg-zinc-900/95 p-3.5 text-left shadow-xl backdrop-blur-md transition-all duration-300 hover:border-zinc-500 hover:bg-zinc-800/95 active:scale-[0.97]"
+      style={tileStyle}
+      className={`group flex flex-col gap-1.5 rounded-2xl border p-3.5 text-left shadow-xl transition-all duration-300 hover:border-zinc-400 active:scale-[0.97] ${
+        isGlass
+          ? 'border-white/15 bg-black/65 backdrop-blur-xl hover:bg-black/75'
+          : 'border-zinc-700/50 bg-zinc-900/95 backdrop-blur-md hover:border-zinc-500 hover:bg-zinc-800/95'
+      }`}
     >
       <div className="flex items-center justify-between">
         <span
-          className={`flex h-9 w-9 items-center justify-center rounded-xl ring-1 ring-inset ${cores[cor]}`}
+          className={`flex h-9 w-9 items-center justify-center rounded-xl ring-1 ring-inset ${cores[cor] || cores.primary}`}
         >
           <Icone className="h-4 w-4" />
         </span>
@@ -239,11 +259,13 @@ function ModalExpandido({
 
 // Fundo da academia + sobreposição escura em gradiente
 function FundoAcademia() {
+  const { config } = useApp()
+  const fundo = config?.fundo_portal_url || fundoAcademia
   return (
     <>
       <div
         className="fixed inset-0 -scale-105 bg-cover bg-center bg-no-repeat blur-[3px]"
-        style={{ backgroundImage: `url(${fundoAcademia})` }}
+        style={{ backgroundImage: `url(${fundo})` }}
         aria-hidden
       />
       <div
@@ -3043,9 +3065,59 @@ export default function PortalAluno() {
           </div>
         )}
 
-        {/* ---------- Rodapé dinâmico ---------- */}
-        <footer className="mx-auto w-full max-w-md px-4 pb-8 pt-6 text-center">
-          <p className="text-xs font-medium text-white/60">
+        {/* ---------- Rodapé dinâmico com contatos e redes sociais ---------- */}
+        <footer className="mx-auto w-full max-w-md px-4 pb-12 pt-6 text-center space-y-4">
+          {(config.whatsapp || config.instagram || config.endereco) && (
+            <div
+              style={{
+                backgroundColor: config?.card_bg_style === 'glass' ? 'rgba(0, 0, 0, 0.65)' : (config?.cor_card || 'rgba(24, 24, 27, 0.94)'),
+                borderColor: config?.card_bg_style === 'glass' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(63, 63, 70, 0.5)'
+              }}
+              className={`rounded-2xl border p-4 text-xs shadow-xl ${
+                config?.card_bg_style === 'glass' ? 'backdrop-blur-xl' : 'backdrop-blur-md'
+              }`}
+            >
+              <p className="mb-2.5 font-bold uppercase tracking-wider text-zinc-300">
+                Fale com a {config.nome_academia}
+              </p>
+              <div className="flex flex-col gap-2 text-zinc-300 sm:flex-row sm:items-center sm:justify-center sm:gap-4">
+                {config.whatsapp && (
+                  <a
+                    href={`https://wa.me/55${config.whatsapp.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center gap-1.5 font-semibold text-emerald-400 hover:text-emerald-300"
+                  >
+                    <Phone className="h-3.5 w-3.5" />
+                    {config.whatsapp}
+                  </a>
+                )}
+                {config.instagram && (
+                  <a
+                    href={
+                      config.instagram.startsWith('http')
+                        ? config.instagram
+                        : `https://instagram.com/${config.instagram.replace('@', '')}`
+                    }
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center gap-1.5 font-semibold text-pink-400 hover:text-pink-300"
+                  >
+                    <Instagram className="h-3.5 w-3.5" />
+                    {config.instagram}
+                  </a>
+                )}
+              </div>
+              {config.endereco && (
+                <p className="mt-2.5 flex items-center justify-center gap-1 text-[11px] text-zinc-400">
+                  <MapPin className="h-3.5 w-3.5 text-primary-400 shrink-0" />
+                  {config.endereco}
+                </p>
+              )}
+            </div>
+          )}
+
+          <p className="text-xs font-medium text-white/50">
             © {new Date().getFullYear()} {config.nome_academia} · Portal do Aluno
           </p>
         </footer>

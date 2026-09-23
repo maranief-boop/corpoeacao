@@ -51,3 +51,12 @@ export function aplicarPaleta(hex) {
     root.style.setProperty(`--p-${step}`, rgb.join(' '))
   })
 }
+
+// Aplica a paleta secundária como CSS variables (--s-50..950) no <html>
+export function aplicarPaletaSecundaria(hex) {
+  const palette = generatePalette(hex || '#059669')
+  const root = document.documentElement
+  Object.entries(palette).forEach(([step, rgb]) => {
+    root.style.setProperty(`--s-${step}`, rgb.join(' '))
+  })
+}
