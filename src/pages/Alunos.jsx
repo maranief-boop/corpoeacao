@@ -3,7 +3,7 @@
 // =====================================================================
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Search, Pencil, Trash2, Dumbbell, Users, Phone, History, Stethoscope } from 'lucide-react'
+import { Plus, Search, Pencil, Trash2, Dumbbell, Users, Phone, History as HistoryIcon, Stethoscope } from 'lucide-react'
 import { useAlunos } from '../hooks/useAlunos'
 import { useToast } from '../components/Toast'
 import { Modal } from '../components/Modal'
@@ -172,7 +172,7 @@ export default function Alunos() {
                     className="rounded-lg p-2 text-zinc-500 transition hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
                     title="Histórico do aluno"
                   >
-                    <History className="h-4 w-4" />
+                    <HistoryIcon className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => setAlunoAvaliacao(aluno)}

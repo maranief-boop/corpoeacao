@@ -14,7 +14,7 @@ import {
   MessageSquare,
   TrendingUp,
   BarChart3,
-  History,
+  History as HistoryIcon,
   HeartPulse
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
@@ -217,7 +217,7 @@ export default function ModalHistorico({ aluno, onFechar }) {
               </p>
             </Card>
             <Card className="p-3 text-center">
-              <History className="mx-auto h-4 w-4 text-primary-500" />
+              <HistoryIcon className="mx-auto h-4 w-4 text-primary-500" />
               <p className="mt-1 text-xl font-extrabold text-zinc-900 dark:text-zinc-100">
                 {carregando ? '—' : historicos.length}
               </p>
@@ -367,7 +367,7 @@ export default function ModalHistorico({ aluno, onFechar }) {
           {/* Histórico de treinos concluídos */}
           <Card className="p-5">
             <div className="mb-3 flex items-center gap-2">
-              <History className="h-4 w-4 text-primary-600" />
+              <HistoryIcon className="h-4 w-4 text-primary-600" />
               <h3 className="font-bold text-zinc-900 dark:text-zinc-100">
                 Histórico de treinos
               </h3>

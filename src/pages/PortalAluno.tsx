@@ -12,7 +12,7 @@ import ModalPerfil from '../components/ModalPerfil.jsx'
 import {
   Activity,
   AlertCircle,
-  Bluetooth,
+  Bluetooth as BluetoothIcon,
   CalendarCheck,
   CheckCircle2,
   ChevronDown,
@@ -2018,7 +2018,7 @@ export default function PortalAluno() {
                   ) : bpmConectado ? (
                     <Heart className="h-6 w-6 fill-emerald-400 text-emerald-400" />
                   ) : (
-                    <Bluetooth className="h-6 w-6 text-white/50" />
+                    <BluetoothIcon className="h-6 w-6 text-white/50" />
                   )}
                 </div>
 
@@ -2057,7 +2057,7 @@ export default function PortalAluno() {
                     {bpmConectando ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      <Bluetooth className="h-4 w-4" />
+                      <BluetoothIcon className="h-4 w-4" />
                     )}
                     {bpmConectando
                       ? 'Conectando...'
@@ -3065,11 +3065,17 @@ function ModalExecucao({
   // Cria/retoma o AudioContext dentro de um gesto do usuário (pré-requisito
   // dos navegadores para emitir som sem interação prévia).
   const garantirAudio = () => {
-    const Ctx =
-      (window as any).AudioContext || (window as any).webkitAudioContext
-    if (!Ctx) return
-    if (!audioRef.current) audioRef.current = new Ctx()
-    if (audioRef.current.state === 'suspended') audioRef.current.resume()
+    try {
+      const Ctx =
+        (window as any).AudioContext || (window as any).webkitAudioContext
+      if (!Ctx) return
+      if (!audioRef.current) audioRef.current = new Ctx()
+      if (audioRef.current && audioRef.current.state === 'suspended') {
+        audioRef.current.resume().catch(() => {})
+      }
+    } catch (e) {
+      console.warn('[AudioContext] Não foi possível inicializar áudio:', e)
+    }
   }
 
   // Bipes sucessivos (Sobe o tom no final para diferenciar de outros sons)

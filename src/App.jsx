@@ -6,6 +6,7 @@ import { AppProvider } from './context/AppContext'
 import { ToastProvider } from './components/Toast'
 import { useAuth } from './hooks/useAuth'
 import { Spinner } from './components/ui'
+import ErrorBoundary from './components/ErrorBoundary'
 import LoginPage from './pages/LoginPage'
 import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
@@ -38,49 +39,67 @@ export default function App() {
   }
 
   return (
-    <AppProvider>
-      <ToastProvider>
-        <HashRouter>
-          <Routes>
-            {/* Rota de login do gestor */}
-            <Route
-              path="/login"
-              element={
-                auth.autenticado
-                  ? <Navigate to="/" replace />
-                  : <LoginPage auth={auth} />
-              }
-            />
+    <ErrorBoundary nome="Aplicação">
+      <AppProvider>
+        <ToastProvider>
+          <HashRouter>
+            <Routes>
+              {/* Rota de login do gestor */}
+              <Route
+                path="/login"
+                element={
+                  auth.autenticado
+                    ? <Navigate to="/" replace />
+                    : <LoginPage auth={auth} />
+                }
+              />
 
-            {/* Rota pública — Portal do Aluno (independente do painel) */}
-            <Route path="/aluno" element={<PortalAluno />} />
+              {/* Rota pública — Portal do Aluno (independente do painel) */}
+              <Route
+                path="/aluno"
+                element={
+                  <ErrorBoundary nome="Portal do Aluno">
+                    <PortalAluno />
+                  </ErrorBoundary>
+                }
+              />
 
-            {/* Rota pública — Site Institucional */}
-            <Route path="/site-publico" element={<SiteInstitucional />} />
+              {/* Rota pública — Site Institucional */}
+              <Route
+                path="/site-publico"
+                element={
+                  <ErrorBoundary nome="Site Institucional">
+                    <SiteInstitucional />
+                  </ErrorBoundary>
+                }
+              />
 
-            {/* Painel do Gestor — rotas protegidas */}
-            <Route
-              element={
-                <RotaProtegida autenticado={auth.autenticado}>
-                  <Layout auth={auth} />
-                </RotaProtegida>
-              }
-            >
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/alunos" element={<Alunos />} />
-              <Route path="/financeiro" element={<Financeiro />} />
-              <Route path="/treinos" element={<Treinos />} />
-              <Route path="/checkins" element={<Checkins />} />
-              <Route path="/crm" element={<Navigate to="/crm/leads" replace />} />
-              <Route path="/crm/leads" element={<Crm />} />
-              <Route path="/crm/agenda" element={<CrmAgenda />} />
-              <Route path="/site" element={<SiteInstitucional />} />
-              <Route path="/configuracoes" element={<Configuracoes />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Route>
-          </Routes>
-        </HashRouter>
-      </ToastProvider>
-    </AppProvider>
+              {/* Painel do Gestor — rotas protegidas */}
+              <Route
+                element={
+                  <RotaProtegida autenticado={auth.autenticado}>
+                    <ErrorBoundary nome="Layout do Painel">
+                      <Layout auth={auth} />
+                    </ErrorBoundary>
+                  </RotaProtegida>
+                }
+              >
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/alunos" element={<Alunos />} />
+                <Route path="/financeiro" element={<Financeiro />} />
+                <Route path="/treinos" element={<Treinos />} />
+                <Route path="/checkins" element={<Checkins />} />
+                <Route path="/crm" element={<Navigate to="/crm/leads" replace />} />
+                <Route path="/crm/leads" element={<Crm />} />
+                <Route path="/crm/agenda" element={<CrmAgenda />} />
+                <Route path="/site" element={<SiteInstitucional />} />
+                <Route path="/configuracoes" element={<Configuracoes />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Route>
+            </Routes>
+          </HashRouter>
+        </ToastProvider>
+      </AppProvider>
+    </ErrorBoundary>
   )
 }
