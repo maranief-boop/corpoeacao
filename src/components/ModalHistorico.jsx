@@ -187,11 +187,18 @@ export default function ModalHistorico({ aluno, onFechar }) {
     >
       {aluno && (
         <div className="space-y-4">
-          {/* Cabeçalho do aluno */}
           <div className="flex flex-wrap items-center gap-3">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-100 text-sm font-bold text-primary-700 dark:bg-primary-950 dark:text-primary-300">
-              {iniciais(aluno.nome)}
-            </span>
+            {aluno.foto_url ? (
+              <img
+                src={aluno.foto_url}
+                alt={aluno.nome}
+                className="h-12 w-12 shrink-0 rounded-full object-cover border border-zinc-200 dark:border-zinc-700 shadow-sm"
+              />
+            ) : (
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-sm font-bold text-zinc-700 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700">
+                {iniciais(aluno.nome)}
+              </span>
+            )}
             <div className="min-w-0 flex-1">
               <p className="truncate font-bold text-zinc-900 dark:text-zinc-100">
                 {aluno.nome}

@@ -14,7 +14,7 @@ import { supabase, isSupabaseConfigured } from './supabase'
  * @returns {Promise<string>} URL pública da imagem
  */
 export async function uploadArquivoStorage(file, options = {}) {
-  const { bucket = 'branding', pasta = 'branding' } = options
+  const { bucket = 'avatars', pasta = 'avatars', maxSize = 5 * 1024 * 1024, apenasImagens = true } = options
 
   if (!isSupabaseConfigured) {
     throw new Error(
@@ -26,22 +26,27 @@ export async function uploadArquivoStorage(file, options = {}) {
     throw new Error('Nenhum arquivo selecionado para upload.')
   }
 
-  // Validação básica de tamanho (ex: max 10MB)
-  const MAX_SIZE = 10 * 1024 * 1024
-  if (file.size > MAX_SIZE) {
-    throw new Error('O arquivo excede o tamanho máximo permitido de 10MB.')
+  // Validação de tipo de arquivo (imagem)
+  if (apenasImagens && !file.type.startsWith('image/')) {
+    throw new Error('Formato inválido. Por favor, selecione uma imagem (PNG, JPG, WEBP, etc).')
+  }
+
+  // Validação de tamanho (padrão 5MB)
+  if (file.size > maxSize) {
+    const limiteMb = Math.round(maxSize / (1024 * 1024))
+    throw new Error(`A imagem excede o tamanho máximo permitido de ${limiteMb}MB.`)
   }
 
   // Gera nome único seguro
-  const extensao = file.name.split('.').pop()?.toLowerCase() || 'png'
+  const extensao = file.name.split('.').pop()?.toLowerCase() || 'jpg'
   const nomeLimpo = file.name
     .replace(/\.[^/.]+$/, '')
     .replace(/[^a-zA-Z0-9_-]/g, '_')
     .slice(0, 30)
   const caminho = `${pasta}/${Date.now()}_${nomeLimpo}.${extensao}`
 
-  // Lista de buckets para tentar (bucket solicitado primeiro, depois 'assets')
-  const bucketsTentativa = [bucket, 'assets'].filter(
+  // Lista de buckets para tentar (bucket solicitado primeiro, depois alternativas públicas)
+  const bucketsTentativa = [bucket, 'avatars', 'branding', 'fotos-alunos', 'assets'].filter(
     (b, idx, arr) => arr.indexOf(b) === idx
   )
 

@@ -139,7 +139,22 @@ export default function Alunos() {
                 key={aluno.id}
                 className="flex items-center gap-3 px-4 py-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
               >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-100 text-xs font-bold text-primary-700 dark:bg-primary-950 dark:text-primary-300">
+                {aluno.foto_url ? (
+                  <img
+                    src={aluno.foto_url}
+                    alt={aluno.nome}
+                    className="h-10 w-10 shrink-0 rounded-full object-cover border border-zinc-200 dark:border-zinc-700 shadow-sm"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none'
+                      const fallback = e.currentTarget.parentElement?.querySelector('.avatar-iniciais-fallback')
+                      if (fallback) fallback.style.display = 'flex'
+                    }}
+                  />
+                ) : null}
+                <span
+                  style={{ display: aluno.foto_url ? 'none' : 'flex' }}
+                  className="avatar-iniciais-fallback h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-bold text-zinc-700 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700"
+                >
                   {iniciais(aluno.nome)}
                 </span>
                 <div className="min-w-0 flex-1">

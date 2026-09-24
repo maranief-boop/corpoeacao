@@ -3,6 +3,7 @@
 // =====================================================================
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { uploadArquivoStorage } from '../lib/storage'
 
 export function useAlunos() {
   const [alunos, setAlunos] = useState([])
@@ -64,23 +65,25 @@ export function useAlunos() {
   }, [])
 
   // UPLOAD FOTO
-  const uploadFoto = useCallback(async (alunoId, blob) => {
-    const nomeArquivo = `fotos/${alunoId}_${Date.now()}.jpg`
-    const { data, error } = await supabase.storage
-      .from('fotos-alunos')
-      .upload(nomeArquivo, blob, {
-        contentType: 'image/jpeg',
-        upsert: true
-      })
-    if (error) throw error
+  const uploadFoto = useCallback(async (alunoId, arquivoOuBlob) => {
+    // Se for blob sem nome, atribui nome
+    const file =
+      arquivoOuBlob instanceof File
+        ? arquivoOuBlob
+        : new File([arquivoOuBlob], `aluno_${alunoId}.jpg`, { type: 'image/jpeg' })
 
-    // Obter URL pública
-    const { data: urlData } = await supabase.storage
-      .from('fotos-alunos')
-      .getPublicUrl(nomeArquivo)
+    const urlPublica = await uploadArquivoStorage(file, {
+      bucket: 'avatars',
+      pasta: 'alunos',
+      maxSize: 5 * 1024 * 1024
+    })
 
-    return urlData.publicUrl
-  }, [])
+    if (alunoId) {
+      await atualizar(alunoId, { foto_url: urlPublica })
+    }
+
+    return urlPublica
+  }, [atualizar])
 
   // DELETE
   const remover = useCallback(async (id) => {

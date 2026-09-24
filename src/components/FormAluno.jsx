@@ -1,10 +1,12 @@
 // =====================================================================
 // Formulário de cadastro/edição de aluno (usado em Alunos e Financeiro)
 // =====================================================================
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Button, Input, Label, Select } from './ui'
-import { paraInputDate } from '../utils/format'
-import { Eye, EyeOff } from 'lucide-react'
+import { paraInputDate, iniciais } from '../utils/format'
+import { Eye, EyeOff, Camera, Trash2, Loader2 } from 'lucide-react'
+import { uploadArquivoStorage } from '../lib/storage'
+import { useToast } from './Toast'
 
 const ALUNO_VAZIO = {
   nome: '',
@@ -21,6 +23,11 @@ const ALUNO_VAZIO = {
 }
 
 export default function FormAluno({ inicial = null, salvando, onSalvar, onCancelar }) {
+  const { toast } = useToast()
+  const inputFotoRef = useRef(null)
+  const [enviandoFoto, setEnviandoFoto] = useState(false)
+  const [mostrarUrlManual, setMostrarUrlManual] = useState(false)
+
   const [form, setForm] = useState(
     inicial
       ? {
@@ -29,7 +36,8 @@ export default function FormAluno({ inicial = null, salvando, onSalvar, onCancel
           plano_valor: inicial.plano_valor != null ? String(inicial.plano_valor) : '',
           data_vencimento: paraInputDate(inicial.data_vencimento),
           data_nascimento: paraInputDate(inicial.data_nascimento),
-          pin: inicial.pin || ''
+          pin: inicial.pin || '',
+          foto_url: inicial.foto_url || ''
         }
       : ALUNO_VAZIO
   )
@@ -37,6 +45,37 @@ export default function FormAluno({ inicial = null, salvando, onSalvar, onCancel
   const [mostrarPin, setMostrarPin] = useState(false)
 
   const set = (campo, valor) => setForm((f) => ({ ...f, [campo]: valor }))
+
+  const handleFotoSelecionada = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      toast('Selecione um arquivo de imagem válido (JPG, PNG, etc).', 'aviso')
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast('A foto deve ter no máximo 5MB.', 'aviso')
+      return
+    }
+
+    setEnviandoFoto(true)
+    try {
+      const url = await uploadArquivoStorage(file, {
+        bucket: 'avatars',
+        pasta: 'alunos',
+        maxSize: 5 * 1024 * 1024
+      })
+      set('foto_url', url)
+      toast('Foto enviada com sucesso!')
+    } catch (err) {
+      toast(err.message || 'Erro ao enviar foto.', 'erro')
+    } finally {
+      setEnviandoFoto(false)
+      if (inputFotoRef.current) inputFotoRef.current.value = ''
+    }
+  }
 
   const validar = () => {
     const e = {}
@@ -116,22 +155,101 @@ export default function FormAluno({ inicial = null, salvando, onSalvar, onCancel
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <Label>Data de Nascimento</Label>
-          <Input
-            type="date"
-            value={form.data_nascimento}
-            onChange={(e) => set('data_nascimento', e.target.value)}
-          />
-        </div>
-        <div>
-          <Label>Foto URL</Label>
-          <Input
-            value={form.foto_url}
-            onChange={(e) => set('foto_url', e.target.value)}
-            placeholder="https://..."
-          />
+      <div>
+        <Label>Data de Nascimento</Label>
+        <Input
+          type="date"
+          value={form.data_nascimento}
+          onChange={(e) => set('data_nascimento', e.target.value)}
+        />
+      </div>
+
+      {/* Foto de Perfil */}
+      <div>
+        <Label>Foto de Perfil</Label>
+        <div className="mt-1.5 flex flex-wrap items-center gap-4 rounded-2xl border border-zinc-200 bg-zinc-50/70 p-3.5 dark:border-zinc-800 dark:bg-zinc-900/60">
+          <div className="relative shrink-0">
+            {form.foto_url ? (
+              <img
+                src={form.foto_url}
+                alt={form.nome || 'Foto'}
+                className="h-16 w-16 rounded-full object-cover border-2 border-primary-500 shadow-sm"
+              />
+            ) : (
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-200 text-base font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700">
+                {form.nome ? iniciais(form.nome) : <Camera className="h-6 w-6 text-zinc-400" />}
+              </div>
+            )}
+            {enviandoFoto && (
+              <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/60 text-white">
+                <Loader2 className="h-5 w-5 animate-spin" />
+              </div>
+            )}
+          </div>
+
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                ref={inputFotoRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFotoSelecionada}
+              />
+              <Button
+                type="button"
+                variante="secundario"
+                onClick={() => inputFotoRef.current?.click()}
+                disabled={enviandoFoto}
+                className="text-xs"
+              >
+                {enviandoFoto ? (
+                  <>
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                    Enviando foto...
+                  </>
+                ) : (
+                  <>
+                    <Camera className="mr-1.5 h-3.5 w-3.5" />
+                    {form.foto_url ? 'Alterar foto' : 'Enviar foto'}
+                  </>
+                )}
+              </Button>
+
+              {form.foto_url && (
+                <button
+                  type="button"
+                  onClick={() => set('foto_url', '')}
+                  className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/50 transition"
+                  title="Remover foto"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Remover
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setMostrarUrlManual(!mostrarUrlManual)}
+                className="ml-auto text-xs text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 underline"
+              >
+                {mostrarUrlManual ? 'Ocultar link direto' : 'Inserir link da imagem'}
+              </button>
+            </div>
+
+            <p className="text-[11px] text-zinc-400">
+              Formatos aceitos: JPG, PNG, WEBP (máx. 5MB).
+            </p>
+
+            {mostrarUrlManual && (
+              <Input
+                value={form.foto_url}
+                onChange={(e) => set('foto_url', e.target.value)}
+                placeholder="https://exemplo.com/foto.jpg"
+                className="text-xs mt-1"
+              />
+            )}
+          </div>
         </div>
       </div>
 

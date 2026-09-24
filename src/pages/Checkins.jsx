@@ -587,9 +587,17 @@ export default function Checkins() {
                     key={c.id}
                     className="flex items-center gap-3 rounded-xl border border-zinc-200 p-2.5 dark:border-zinc-800"
                   >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-100 text-xs font-bold text-primary-700 dark:bg-primary-950 dark:text-primary-300">
-                      {iniciais(aluno.nome)}
-                    </span>
+                    {aluno.foto_url ? (
+                      <img
+                        src={aluno.foto_url}
+                        alt={aluno.nome}
+                        className="h-9 w-9 shrink-0 rounded-full object-cover border border-zinc-200 dark:border-zinc-700 shadow-sm"
+                      />
+                    ) : (
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-100 text-xs font-bold text-primary-700 dark:bg-primary-950 dark:text-primary-300">
+                        {iniciais(aluno.nome)}
+                      </span>
+                    )}
                     <div className="min-w-0 flex-1">
                       <button
                         onClick={() => setAlunoHistorico(aluno)}
@@ -642,9 +650,17 @@ export default function Checkins() {
                           : 'border-l-transparent hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
                     }`}
                   >
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-[10px] font-bold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-200">
-                      {iniciais(a.nome)}
-                    </span>
+                    {a.foto_url ? (
+                      <img
+                        src={a.foto_url}
+                        alt={a.nome}
+                        className="h-8 w-8 shrink-0 rounded-full object-cover border border-zinc-200 dark:border-zinc-700"
+                      />
+                    ) : (
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-[10px] font-bold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-200">
+                        {iniciais(a.nome)}
+                      </span>
+                    )}
                     <div className="min-w-0 flex-1">
                       <button
                         onClick={() => setAlunoHistorico(a)}
@@ -724,9 +740,17 @@ export default function Checkins() {
                   className="flex flex-col gap-2.5 rounded-xl border border-zinc-200 p-3 sm:flex-row sm:items-center dark:border-zinc-800"
                 >
                   <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-xs font-bold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-200">
-                      {iniciais(aluno?.nome || '?')}
-                    </span>
+                    {aluno?.foto_url ? (
+                      <img
+                        src={aluno.foto_url}
+                        alt={aluno.nome}
+                        className="h-10 w-10 shrink-0 rounded-full object-cover border border-zinc-200 dark:border-zinc-700 shadow-sm"
+                      />
+                    ) : (
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-xs font-bold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-200">
+                        {iniciais(aluno?.nome || '?')}
+                      </span>
+                    )}
                     <div className="min-w-0">
                       {aluno ? (
                         <button
@@ -816,9 +840,17 @@ export default function Checkins() {
                           : 'border-zinc-200 hover:border-primary-500 hover:bg-primary-50 dark:border-zinc-800 dark:hover:border-primary-700 dark:hover:bg-primary-950/40'
                       }`}
                     >
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-xs font-bold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-200">
-                        {iniciais(a.nome)}
-                      </span>
+                      {a.foto_url ? (
+                        <img
+                          src={a.foto_url}
+                          alt={a.nome}
+                          className="h-10 w-10 shrink-0 rounded-full object-cover border border-zinc-200 dark:border-zinc-700 shadow-sm"
+                        />
+                      ) : (
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-xs font-bold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-200">
+                          {iniciais(a.nome)}
+                        </span>
+                      )}
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-semibold text-zinc-900 dark:text-zinc-100">
                           {a.nome}

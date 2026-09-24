@@ -17,6 +17,7 @@ create table if not exists public.alunos (
   nome              text not null,
   telefone          text,
   cpf               text,
+  foto_url          text,          -- URL da foto de perfil no Supabase Storage
   pin               text,          -- PIN de 4 dígitos para acesso ao Portal do Aluno
   plano_valor       numeric(10,2) not null default 0,
   status_pagamento  text not null default 'em_dia',
@@ -28,6 +29,7 @@ create table if not exists public.alunos (
 );
 
 -- Para bancos já existentes: adiciona as colunas sem quebrar os dados
+alter table public.alunos add column if not exists foto_url text;
 alter table public.alunos add column if not exists data_ultimo_pagamento date;
 alter table public.alunos add column if not exists forma_pagamento text;
 alter table public.alunos add column if not exists pin text;
@@ -527,24 +529,28 @@ create policy "Site: inserir leads"
 -- ---------------------------------------------------------------------
 
 -- ---------------------------------------------------------------------
--- SUPABASE STORAGE: Bucket 'branding' (público para logos e fundos)
+-- SUPABASE STORAGE: Buckets 'avatars' e 'branding' (públicos)
 -- ---------------------------------------------------------------------
 insert into storage.buckets (id, name, public)
 values ('branding', 'branding', true)
 on conflict (id) do update set public = true;
 
+insert into storage.buckets (id, name, public)
+values ('avatars', 'avatars', true)
+on conflict (id) do update set public = true;
+
 create policy "Branding: leitura publica"
   on storage.objects for select
-  using (bucket_id = 'branding');
+  using (bucket_id in ('branding', 'avatars'));
 
 create policy "Branding: upload permitido"
   on storage.objects for insert
-  with check (bucket_id = 'branding');
+  with check (bucket_id in ('branding', 'avatars'));
 
 create policy "Branding: atualizacao permitida"
   on storage.objects for update
-  using (bucket_id = 'branding')
-  with check (bucket_id = 'branding');
+  using (bucket_id in ('branding', 'avatars'))
+  with check (bucket_id in ('branding', 'avatars'));
 
 -- IMPORTANTE: recarrega o cache de schema do PostgREST para que as colunas
 -- e tabelas novas fiquem disponíveis IMEDIATAMENTE via API.

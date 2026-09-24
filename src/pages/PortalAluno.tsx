@@ -8,12 +8,14 @@ import type { ReactNode } from 'react'
 import { supabase } from '../lib/supabase'
 import { useApp } from '../context/AppContext'
 import { useToast } from '../components/Toast'
+import { uploadArquivoStorage } from '../lib/storage'
 import ModalPerfil from '../components/ModalPerfil.jsx'
 import {
   Activity,
   AlertCircle,
   Bluetooth as BluetoothIcon,
   CalendarCheck,
+  Camera,
   CheckCircle2,
   ChevronDown,
   ClipboardList,
@@ -35,7 +37,9 @@ import {
   QrCode,
   Save,
   SkipForward,
+  Sparkles,
   Stethoscope,
+  Trash2,
   User,
   Wallet,
   HeartPulse,
@@ -53,6 +57,7 @@ type Aluno = {
   nome: string
   telefone?: string | null
   cpf?: string | null
+  foto_url?: string | null
   plano_valor?: number
   status_pagamento?: string
   forma_pagamento?: string | null
@@ -487,6 +492,107 @@ export default function PortalAluno() {
 
   // ---------- Avaliação física ----------
   const [avaliacao, setAvaliacao] = useState<any>(null)
+
+  // ---------- Foto de perfil e saudação motivacional dinâmica ----------
+  const inputFotoRef = useRef<HTMLInputElement>(null)
+  const [enviandoFoto, setEnviandoFoto] = useState(false)
+
+  // Saudação acolhedora e motivadora dinâmica por horário e dia
+  const { saudacaoHorario, fraseMotivacional } = useMemo(() => {
+    const hora = new Date().getHours()
+    let saudacao = 'Olá'
+    if (hora >= 5 && hora < 12) saudacao = 'Bom dia'
+    else if (hora >= 12 && hora < 18) saudacao = 'Boa tarde'
+    else saudacao = 'Boa noite'
+
+    const frases = [
+      'Bora seguir o treino de hoje 💪',
+      'Constância é o segredo do resultado! 🔥',
+      'Foco na meta e excelente treino! 🏋️‍♂️',
+      'Cada repetição te deixa mais forte! ⚡',
+      'Dia perfeito para superar seus limites! 🚀',
+      'Bora buscar a sua melhor versão hoje! 🎯',
+      'Treino feito, missão cumprida! 👊'
+    ]
+    const dia = new Date().getDay()
+    return {
+      saudacaoHorario: saudacao,
+      fraseMotivacional: frases[dia % frases.length]
+    }
+  }, [])
+
+  const handleUploadFoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !aluno) return
+
+    if (!file.type.startsWith('image/')) {
+      toast('Selecione um arquivo de imagem válido (JPG, PNG, etc).', 'aviso')
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast('A foto deve ter no máximo 5MB.', 'aviso')
+      return
+    }
+
+    setEnviandoFoto(true)
+    try {
+      const url = await uploadArquivoStorage(file, {
+        bucket: 'avatars',
+        pasta: 'alunos',
+        maxSize: 5 * 1024 * 1024
+      })
+
+      const { data, error } = await supabase
+        .from('alunos')
+        .update({ foto_url: url })
+        .eq('id', aluno.id)
+        .select('*')
+        .single()
+
+      if (error) throw error
+
+      const nova: Sessao = {
+        aluno: data,
+        logadaEm: sessao?.logadaEm || new Date().toISOString()
+      }
+      localStorage.setItem(CHAVE_SESSAO, JSON.stringify(nova))
+      setSessao(nova)
+      toast('Foto de perfil atualizada com sucesso!')
+    } catch (err: any) {
+      toast(err?.message || 'Erro ao enviar foto.', 'erro')
+    } finally {
+      setEnviandoFoto(false)
+      if (inputFotoRef.current) inputFotoRef.current.value = ''
+    }
+  }
+
+  const handleRemoverFoto = async () => {
+    if (!aluno) return
+    setEnviandoFoto(true)
+    try {
+      const { data, error } = await supabase
+        .from('alunos')
+        .update({ foto_url: null })
+        .eq('id', aluno.id)
+        .select('*')
+        .single()
+
+      if (error) throw error
+
+      const nova: Sessao = {
+        aluno: data,
+        logadaEm: sessao?.logadaEm || new Date().toISOString()
+      }
+      localStorage.setItem(CHAVE_SESSAO, JSON.stringify(nova))
+      setSessao(nova)
+      toast('Foto de perfil removida.')
+    } catch (err: any) {
+      toast(err?.message || 'Erro ao remover foto.', 'erro')
+    } finally {
+      setEnviandoFoto(false)
+    }
+  }
 
   // Função para atualizar perfil do aluno
   const atualizarPerfil = async (payload: Partial<Aluno>) => {
@@ -1394,9 +1500,17 @@ export default function PortalAluno() {
                 className="rounded-3xl border border-zinc-700/50 bg-zinc-900/95 p-6 shadow-2xl backdrop-blur-md"
               >
                 <div className="mb-4 flex items-center gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-sm font-extrabold text-white ring-1 ring-zinc-600">
-                    {iniciais(pendente.nome)}
-                  </span>
+                  {pendente.foto_url ? (
+                    <img
+                      src={pendente.foto_url}
+                      alt={pendente.nome}
+                      className="h-11 w-11 rounded-full object-cover ring-2 ring-primary-500/60 shadow"
+                    />
+                  ) : (
+                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-zinc-800 text-sm font-extrabold text-white ring-1 ring-zinc-600">
+                      {iniciais(pendente.nome)}
+                    </span>
+                  )}
                   <div>
                     <p className="text-base font-extrabold text-white">{pendente.nome}</p>
                     <p className="text-xs font-medium text-zinc-300">Digite seu PIN para entrar</p>
@@ -1479,21 +1593,69 @@ export default function PortalAluno() {
       <div className="relative z-10">
         {/* ---------- Topo: boas-vindas + logo pulsante ---------- */}
         <header className="mx-auto w-full max-w-md px-5 pt-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-sm font-extrabold ring-1 ring-white/30">
-                {iniciais(aluno.nome)}
-              </span>
-              <div>
-                <p className="text-xs text-white/60">Bem-vindo(a),</p>
-                <p className="text-base font-extrabold leading-tight">
-                  {aluno.nome.split(' ')[0]}
+          {/* Input oculto para troca ou envio de foto */}
+          <input
+            ref={inputFotoRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleUploadFoto}
+          />
+
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              {/* Avatar interativo do aluno com botão de foto */}
+              <div className="relative shrink-0">
+                <button
+                  type="button"
+                  onClick={() => inputFotoRef.current?.click()}
+                  disabled={enviandoFoto}
+                  className="group relative block rounded-full focus:outline-none focus:ring-2 focus:ring-primary-400"
+                  title="Toque para alterar sua foto de perfil"
+                >
+                  {aluno.foto_url ? (
+                    <img
+                      src={aluno.foto_url}
+                      alt={aluno.nome}
+                      className="h-12 w-12 rounded-full object-cover ring-2 ring-white/30 shadow-md transition group-hover:brightness-90"
+                    />
+                  ) : (
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-white/25 to-white/10 text-sm font-extrabold ring-2 ring-white/30 shadow-md">
+                      {iniciais(aluno.nome)}
+                    </span>
+                  )}
+
+                  {/* Indicador de carregamento ou ícone de câmera */}
+                  {enviandoFoto ? (
+                    <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/60 text-white">
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    </div>
+                  ) : (
+                    <div className="absolute -bottom-0.5 -right-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-primary-500 text-white ring-2 ring-zinc-900 shadow transition-transform group-hover:scale-110">
+                      <Camera className="h-2.5 w-2.5" />
+                    </div>
+                  )}
+                </button>
+              </div>
+
+              {/* Saudação motivacional dinâmica */}
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-white/70">
+                  {saudacaoHorario},{' '}
+                  <span className="font-extrabold text-white">
+                    {aluno.nome.split(' ')[0]}
+                  </span>
+                  !
+                </p>
+                <p className="text-sm font-extrabold text-white leading-tight drop-shadow-sm truncate">
+                  {fraseMotivacional}
                 </p>
               </div>
             </div>
+
             <button
               onClick={sair}
-              className="rounded-xl border border-white/15 bg-white/10 p-2.5 transition hover:bg-white/20"
+              className="shrink-0 rounded-xl border border-white/15 bg-white/10 p-2.5 transition hover:bg-white/20 active:scale-95"
               title="Sair"
               aria-label="Sair"
             >
@@ -2676,13 +2838,49 @@ export default function PortalAluno() {
             icon={User}
             onFechar={() => setModalAberto(null)}
           >
-            <div className="flex items-center gap-3">
-              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/10 text-lg font-extrabold ring-1 ring-white/20">
-                {iniciais(aluno.nome)}
-              </span>
-              <div>
-                <p className="text-base font-extrabold text-white">{aluno.nome}</p>
-                <p className="text-xs text-white/50">Atualize seus dados abaixo</p>
+            <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.04] p-3.5">
+              <div className="relative shrink-0">
+                {aluno.foto_url ? (
+                  <img
+                    src={aluno.foto_url}
+                    alt={aluno.nome}
+                    className="h-16 w-16 rounded-full object-cover ring-2 ring-primary-500 shadow-md"
+                  />
+                ) : (
+                  <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white/10 text-xl font-extrabold text-white ring-1 ring-white/20">
+                    {iniciais(aluno.nome)}
+                  </span>
+                )}
+                {enviandoFoto && (
+                  <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/60 text-white">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0 flex-1 space-y-1.5">
+                <p className="truncate text-base font-extrabold text-white">{aluno.nome}</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => inputFotoRef.current?.click()}
+                    disabled={enviandoFoto}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-2.5 py-1 text-xs font-semibold text-white transition hover:bg-white/20 active:scale-95 disabled:opacity-50"
+                  >
+                    <Camera className="h-3.5 w-3.5" />
+                    {aluno.foto_url ? 'Alterar foto' : 'Enviar foto'}
+                  </button>
+                  {aluno.foto_url && (
+                    <button
+                      type="button"
+                      onClick={handleRemoverFoto}
+                      disabled={enviandoFoto}
+                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-red-400 transition hover:bg-red-500/20 active:scale-95 disabled:opacity-50"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      Remover
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
