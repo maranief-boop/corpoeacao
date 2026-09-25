@@ -506,6 +506,9 @@ export default function PortalAluno() {
   const [cartaoValidade, setCartaoValidade] = useState('')
   const [cartaoCvv, setCartaoCvv] = useState('')
   const [cartaoParcelas, setCartaoParcelas] = useState(1)
+  const [comprovanteArquivo, setComprovanteArquivo] = useState<File | null>(null)
+  const [enviandoComprovante, setEnviandoComprovante] = useState(false)
+  const inputComprovanteRef = useRef<HTMLInputElement>(null)
 
   // ---------- Pagamentos recebidos (histórico por competência) ----------
   const [pagamentos, setPagamentos] = useState<any[]>([])
@@ -649,13 +652,18 @@ export default function PortalAluno() {
   const pagamentoMesAtualPago = pagamentos.some(
     (p) => p.competencia === competenciaAtual && p.status === 'pago'
   )
+  const pagamentoMesAtualAguardando = pagamentos.some(
+    (p) => p.competencia === competenciaAtual && p.status === 'aguardando_confirmacao'
+  )
 
   // Status do pagamento atual (para card + tile)
   const statusPagamentoAtual = pagamentoMesAtualPago
     ? { rotulo: 'Pago', cor: 'emerald' }
-    : aluno?.status_pagamento === 'inadimplente'
-      ? { rotulo: 'Atrasado', cor: 'red' }
-      : { rotulo: 'Aberto', cor: 'amber' }
+    : pagamentoMesAtualAguardando
+      ? { rotulo: 'Aguardando confirmação', cor: 'amber' }
+      : aluno?.status_pagamento === 'inadimplente'
+        ? { rotulo: 'Atrasado', cor: 'red' }
+        : { rotulo: 'Aberto', cor: 'amber' }
 
   // ===================================================================
   // LOGIN — valida CPF ou telefone na tabela "alunos" do Supabase
@@ -903,6 +911,45 @@ export default function PortalAluno() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [aluno?.id])
 
+  // ---------- Sincronização em tempo real (Gestor ↔ Aluno) ----------
+  useEffect(() => {
+    if (!aluno?.id) return
+
+    const canal = supabase
+      .channel(`sync-portal-aluno-${aluno.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'pagamentos', filter: `aluno_id=eq.${aluno.id}` },
+        () => {
+          carregarPagamentos()
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'alunos', filter: `id=eq.${aluno.id}` },
+        (payload) => {
+          if (payload.new) {
+            setSessao((prev) => {
+              if (!prev) return null
+              const novaSessao: Sessao = {
+                ...prev,
+                aluno: { ...prev.aluno, ...(payload.new as Aluno) }
+              }
+              try {
+                localStorage.setItem(CHAVE_SESSAO, JSON.stringify(novaSessao))
+              } catch {}
+              return novaSessao
+            })
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(canal)
+    }
+  }, [aluno?.id, carregarPagamentos])
+
   const ORDEM = [1, 2, 3, 4, 5, 6, 0] // Seg/Segunda → Dom/Sábado
   const ROTULOS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
   const MESES_ROTULO = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
@@ -982,51 +1029,62 @@ export default function PortalAluno() {
   }
 
   // ---------- Pagamentos: registro do recibo (pix ou cartão) ----------
-  const registrarPagamento = async (forma: 'pix' | 'cartao') => {
+  const registrarPagamento = async (forma: 'pix' | 'cartao', urlComprovante?: string | null) => {
     if (!aluno) return
-    const hoje = dataParaInput()
+    const formaNome = forma === 'pix' ? 'Pix' : 'Cartão de Crédito'
+
+    // Registra como 'aguardando_confirmacao' para conciliação do gestor (Cenário B)
     const { error } = await supabase.from('pagamentos').insert({
       aluno_id: aluno.id,
       competencia: competenciaAtual,
       valor: Number(aluno.plano_valor) || 0,
-      status: 'pago',
+      status: 'aguardando_confirmacao',
       forma,
-      data_pagamento: new Date().toISOString()
+      forma_pagamento: formaNome,
+      data_pagamento: new Date().toISOString(),
+      comprovante_url: urlComprovante || null
     })
     if (error) throw new Error(error.message || 'Erro ao registrar o pagamento.')
-    const { error: erroAluno } = await supabase
-      .from('alunos')
-      .update({
-        status_pagamento: 'em_dia',
-        data_ultimo_pagamento: hoje,
-        forma_pagamento: forma === 'pix' ? 'Pix' : 'Cartão'
-      })
-      .eq('id', aluno.id)
-    if (erroAluno) throw new Error(erroAluno.message)
-    const novoAluno = {
-      ...aluno,
-      status_pagamento: 'em_dia',
-      data_ultimo_pagamento: hoje,
-      forma_pagamento: forma === 'pix' ? 'Pix' : 'Cartão'
-    }
-    const nova: Sessao = {
-      aluno: novoAluno,
-      logadaEm: sessao?.logadaEm || new Date().toISOString()
-    }
-    localStorage.setItem(CHAVE_SESSAO, JSON.stringify(nova))
-    setSessao(nova)
+
+    try {
+      await supabase
+        .from('alunos')
+        .update({
+          forma_pagamento: formaNome
+        })
+        .eq('id', aluno.id)
+    } catch {}
+
+    setComprovanteArquivo(null)
     await carregarPagamentos()
   }
 
   const confirmarPix = async () => {
     setCartaoProcessing(true)
     try {
-      await registrarPagamento('pix')
+      let comprovanteUrl: string | null = null
+
+      if (comprovanteArquivo) {
+        setEnviandoComprovante(true)
+        try {
+          comprovanteUrl = await uploadArquivoStorage(comprovanteArquivo, {
+            bucket: 'avatars',
+            pasta: 'comprovantes',
+            maxSize: 5 * 1024 * 1024
+          })
+        } catch (err: any) {
+          console.warn('Erro ao subir arquivo do comprovante:', err)
+        } finally {
+          setEnviandoComprovante(false)
+        }
+      }
+
+      await registrarPagamento('pix', comprovanteUrl)
       setPixCopiado(false)
       setFormaPagamentoAtiva(null)
-      toast('Pagamento confirmado. Obrigado!')
+      toast('Pagamento informado com sucesso! Aguardando confirmação do gestor.')
     } catch (e: any) {
-      toast(e?.message || 'Erro ao confirmar o Pix.', 'erro')
+      toast(e?.message || 'Erro ao informar o Pix.', 'erro')
     } finally {
       setCartaoProcessing(false)
     }
@@ -1055,13 +1113,13 @@ export default function PortalAluno() {
         setCartaoValidade('')
         setCartaoCvv('')
         setCartaoParcelas(1)
-        toast('Pagamento aprovado. Obrigado!')
+        toast('Pagamento registrado! Aguardando conciliação do gestor.')
       } catch (e: any) {
         toast(e?.message || 'Erro ao processar o pagamento.', 'erro')
       } finally {
         setCartaoProcessing(false)
       }
-    }, 1500)
+    }, 1200)
   }
 
   const FORMATAR_COMPETENCIA = (comp: string) => {
@@ -1071,8 +1129,11 @@ export default function PortalAluno() {
 
   const CORES_STATUS_PAG: Record<string, string> = {
     pago: 'bg-emerald-500/15 text-emerald-300 ring-emerald-500/30',
+    'aguardando confirmação': 'bg-amber-500/15 text-amber-300 ring-amber-500/30',
+    aguardando_confirmacao: 'bg-amber-500/15 text-amber-300 ring-amber-500/30',
     aberto: 'bg-amber-500/15 text-amber-300 ring-amber-500/30',
-    atrasado: 'bg-red-500/15 text-red-300 ring-red-500/30'
+    atrasado: 'bg-red-500/15 text-red-300 ring-red-500/30',
+    cancelado: 'bg-zinc-500/15 text-zinc-300 ring-zinc-500/30'
   }
 
   const ROTULO_STATUS_ALUNO: Record<string, string> = {
@@ -2715,7 +2776,7 @@ export default function PortalAluno() {
               <div className="flex items-center gap-3">
                 <span
                   className={`flex h-11 w-11 items-center justify-center rounded-xl ring-1 ring-inset ${
-                    CORES_STATUS_PAG[statusPagamentoAtual.rotulo.toLowerCase()]
+                    CORES_STATUS_PAG[statusPagamentoAtual.rotulo.toLowerCase()] || 'bg-amber-500/15 text-amber-300 ring-amber-500/30'
                   }`}
                 >
                   {statusPagamentoAtual.rotulo === 'Pago' ? (
@@ -2726,7 +2787,7 @@ export default function PortalAluno() {
                 </span>
                 <div>
                   <p className="text-base font-extrabold text-white">
-                    {competenciaAtual}
+                    Competência {competenciaAtual}
                   </p>
                   <p className="text-sm font-bold text-emerald-400">
                     {formatarMoeda(aluno.plano_valor)}{' '}
@@ -2738,23 +2799,62 @@ export default function PortalAluno() {
               </div>
             </div>
 
-            {!formaPagamentoAtiva && (
-              <div className="grid grid-cols-2 gap-2.5">
-                <button
-                  onClick={() => setFormaPagamentoAtiva('pix')}
-                  className="flex flex-col items-center gap-2 rounded-2xl border border-white/15 bg-slate-900/80 py-4 text-sm font-bold text-white shadow-lg backdrop-blur-md transition-all duration-300 hover:border-white/30 hover:bg-slate-900 active:scale-[0.97]"
-                >
-                  <QrCode className="h-6 w-6 text-primary-400" />
-                  Pagar com Pix
-                </button>
-                <button
-                  onClick={() => setFormaPagamentoAtiva('cartao')}
-                  className="flex flex-col items-center gap-2 rounded-2xl border border-white/15 bg-slate-900/80 py-4 text-sm font-bold text-white shadow-lg backdrop-blur-md transition-all duration-300 hover:border-white/30 hover:bg-slate-900 active:scale-[0.97]"
-                >
-                  <CreditCard className="h-6 w-6 text-primary-400" />
-                  Pagar com Cartão
-                </button>
+            {/* Informações detalhadas do status */}
+            {statusPagamentoAtual.rotulo === 'Pago' ? (
+              <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-200">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+                  <p className="font-bold text-sm text-white">Situação Regularizada</p>
+                </div>
+                <p className="mt-1 text-xs text-emerald-300/90">
+                  Sua mensalidade desta competência já foi quitada e confirmada.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-white/80">
+                  {aluno.data_ultimo_pagamento && (
+                    <p>
+                      <span className="text-zinc-400">Data da baixa:</span>{' '}
+                      <span className="font-semibold text-white">{formatarData(aluno.data_ultimo_pagamento)}</span>
+                    </p>
+                  )}
+                  {aluno.forma_pagamento && (
+                    <p>
+                      <span className="text-zinc-400">Forma utilizada:</span>{' '}
+                      <span className="font-semibold text-white">{aluno.forma_pagamento}</span>
+                    </p>
+                  )}
+                </div>
               </div>
+            ) : statusPagamentoAtual.rotulo === 'Aguardando confirmação' ? (
+              <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-amber-200">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-5 w-5 animate-spin text-amber-400" />
+                  <p className="font-bold text-sm text-white">Pagamento Informado — Em Análise</p>
+                </div>
+                <p className="mt-1 text-xs text-amber-300/90 leading-relaxed">
+                  Você informou o pagamento desta fatura. O gestor da academia foi notificado e realizará a conciliação em breve. Assim que aprovado, seu status mudará automaticamente para "Pago".
+                </p>
+              </div>
+            ) : (
+              <>
+                {!formaPagamentoAtiva && (
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <button
+                      onClick={() => setFormaPagamentoAtiva('pix')}
+                      className="flex flex-col items-center gap-2 rounded-2xl border border-white/15 bg-slate-900/80 py-4 text-sm font-bold text-white shadow-lg backdrop-blur-md transition-all duration-300 hover:border-white/30 hover:bg-slate-900 active:scale-[0.97]"
+                    >
+                      <QrCode className="h-6 w-6 text-primary-400" />
+                      Pagar com Pix
+                    </button>
+                    <button
+                      onClick={() => setFormaPagamentoAtiva('cartao')}
+                      className="flex flex-col items-center gap-2 rounded-2xl border border-white/15 bg-slate-900/80 py-4 text-sm font-bold text-white shadow-lg backdrop-blur-md transition-all duration-300 hover:border-white/30 hover:bg-slate-900 active:scale-[0.97]"
+                    >
+                      <CreditCard className="h-6 w-6 text-primary-400" />
+                      Pagar com Cartão
+                    </button>
+                  </div>
+                )}
+              </>
             )}
 
             {formaPagamentoAtiva === 'pix' && (
@@ -2770,10 +2870,39 @@ export default function PortalAluno() {
                     {pixCopiaECola}
                   </p>
                 </div>
+
+                {/* Upload opcional de Comprovante */}
+                <div className="mt-3 rounded-xl border border-white/10 bg-white/5 p-3">
+                  <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
+                    Anexar comprovante de pagamento (opcional):
+                  </label>
+                  <input
+                    ref={inputComprovanteRef}
+                    type="file"
+                    accept="image/*,.pdf"
+                    onChange={(e) => setComprovanteArquivo(e.target.files?.[0] || null)}
+                    className="hidden"
+                  />
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => inputComprovanteRef.current?.click()}
+                      className="rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-medium text-white hover:bg-white/20"
+                    >
+                      {comprovanteArquivo ? 'Alterar comprovante' : 'Escolher foto/arquivo'}
+                    </button>
+                    {comprovanteArquivo && (
+                      <span className="truncate text-xs text-emerald-400 font-medium max-w-[180px]">
+                        {comprovanteArquivo.name}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <button
                     onClick={copiarPix}
-                    disabled={cartaoProcessing}
+                    disabled={cartaoProcessing || enviandoComprovante}
                     className="flex items-center justify-center gap-1.5 rounded-xl border border-white/15 bg-white/5 py-2.5 text-xs font-bold text-white/80 transition-all duration-300 hover:bg-white/10 active:scale-[0.97] disabled:opacity-60"
                   >
                     {pixCopiado ? (
@@ -2785,15 +2914,15 @@ export default function PortalAluno() {
                   </button>
                   <button
                     onClick={confirmarPix}
-                    disabled={cartaoProcessing}
+                    disabled={cartaoProcessing || enviandoComprovante}
                     className="flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-emerald-500/30 ring-1 ring-inset ring-white/20 transition-all duration-300 hover:brightness-110 active:scale-[0.97] disabled:opacity-60"
                   >
-                    {cartaoProcessing ? (
+                    {cartaoProcessing || enviandoComprovante ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     ) : (
                       <CheckCircle2 className="h-3.5 w-3.5" />
                     )}
-                    {cartaoProcessing ? 'Confirmando...' : 'Já paguei, confirmar'}
+                    {cartaoProcessing || enviandoComprovante ? 'Enviando...' : 'Já paguei, confirmar'}
                   </button>
                 </div>
               </div>
@@ -2875,7 +3004,7 @@ export default function PortalAluno() {
 
             <div>
               <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-zinc-300">
-                Pagamentos anteriores
+                Histórico de Faturas e Pagamentos
               </p>
               {pagamentos.length === 0 ? (
                 <div className="rounded-2xl border border-white/15 bg-slate-900/60 px-4 py-5 text-center text-xs text-zinc-300">
@@ -2883,42 +3012,47 @@ export default function PortalAluno() {
                 </div>
               ) : (
                 <ul className="space-y-2">
-                  {pagamentos.map((p) => (
-                    <li
-                      key={p.id}
-                      className="flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-slate-900/75 px-4 py-3 shadow-md backdrop-blur-md"
-                    >
-                      <div>
-                        <p className="text-sm font-bold text-white">
-                          {FORMATAR_COMPETENCIA(p.competencia)}
-                        </p>
-                        <p className="text-xs text-zinc-300">
-                          {formatarData(p.data_pagamento) || '—'} ·{' '}
-                          {p.forma === 'pix'
-                            ? 'Pix'
-                            : p.forma === 'cartao'
-                              ? 'Cartão'
-                              : '—'}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-base font-black text-white">
-                          {formatarMoeda(p.valor)}
-                        </span>
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-[10px] font-bold ring-1 ring-inset ${
-                            CORES_STATUS_PAG[p.status] || CORES_STATUS_PAG.aberto
-                          }`}
-                        >
-                          {p.status === 'pago'
-                            ? 'Pago'
+                  {pagamentos.map((p) => {
+                    const rotuloStatus =
+                      p.status === 'pago'
+                        ? 'Pago'
+                        : p.status === 'aguardando_confirmacao'
+                          ? 'Aguardando confirmação'
+                          : p.status === 'cancelado'
+                            ? 'Cancelado'
                             : p.status === 'atrasado'
                               ? 'Atrasado'
-                              : 'Aberto'}
-                        </span>
-                      </div>
-                    </li>
-                  ))}
+                              : 'Aberto'
+
+                    return (
+                      <li
+                        key={p.id}
+                        className="flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-slate-900/75 px-4 py-3 shadow-md backdrop-blur-md"
+                      >
+                        <div>
+                          <p className="text-sm font-bold text-white">
+                            {FORMATAR_COMPETENCIA(p.competencia)}
+                          </p>
+                          <p className="text-xs text-zinc-300">
+                            {formatarData(p.data_pagamento) || '—'} ·{' '}
+                            {p.forma_pagamento || (p.forma === 'pix' ? 'Pix' : p.forma === 'cartao' ? 'Cartão' : '—')}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-base font-black text-white">
+                            {formatarMoeda(p.valor)}
+                          </span>
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold ring-1 ring-inset ${
+                              CORES_STATUS_PAG[p.status] || CORES_STATUS_PAG.aberto
+                            }`}
+                          >
+                            {rotuloStatus}
+                          </span>
+                        </div>
+                      </li>
+                    )
+                  })}
                 </ul>
               )}
             </div>

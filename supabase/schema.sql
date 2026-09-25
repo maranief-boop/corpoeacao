@@ -25,8 +25,12 @@ create table if not exists public.alunos (
   data_ultimo_pagamento date,  -- novo campo para rastreamento de recibos
   forma_pagamento   text,       -- Dinheiro, Pix, Cartão, Boleto, Transferência...
   created_at        timestamptz not null default now(),
-  constraint alunos_status_check check (status_pagamento in ('em_dia', 'vencendo', 'inadimplente'))
+  constraint alunos_status_check check (status_pagamento in ('em_dia', 'vencendo', 'inadimplente', 'aguardando_confirmacao'))
 );
+
+-- Para bancos já existentes: atualiza constraint de status do aluno
+alter table public.alunos drop constraint if exists alunos_status_check;
+alter table public.alunos add constraint alunos_status_check check (status_pagamento in ('em_dia', 'vencendo', 'inadimplente', 'aguardando_confirmacao'));
 
 -- Para bancos já existentes: adiciona as colunas sem quebrar os dados
 alter table public.alunos add column if not exists foto_url text;
@@ -179,8 +183,8 @@ alter table public.historico_treinos add column if not exists created_at timesta
 create index if not exists historico_treinos_aluno_idx on public.historico_treinos (aluno_id, data desc);
 
 -- ---------------------------------------------------------------------
--- Tabela: pagamentos (recibos por competência no Portal do Aluno)
--- status: aberto | pago | atrasado   |   forma: pix | cartao
+-- Tabela: pagamentos (recibos / conciliação financeira Gestor ↔ Aluno)
+-- status: aberto | aguardando_confirmacao | pago | atrasado | cancelado
 -- ---------------------------------------------------------------------
 create table if not exists public.pagamentos (
   id             uuid primary key default gen_random_uuid(),
@@ -188,10 +192,13 @@ create table if not exists public.pagamentos (
   competencia    text not null,            -- "2026-08"
   valor          numeric(10,2) not null default 0,
   status         text not null default 'aberto',
-  forma          text,
+  forma          text,                     -- Pix, Cartão, Dinheiro, Boleto, etc.
   data_pagamento timestamptz,
+  data_vencimento date,
+  confirmado_por text,                     -- ID/nome do gestor ou 'aluno'
+  comprovante_url text,
   created_at     timestamptz not null default now(),
-  constraint pagamentos_status_check check (status in ('aberto', 'pago', 'atrasado'))
+  constraint pagamentos_status_check check (status in ('aberto', 'aguardando_confirmacao', 'pago', 'atrasado', 'cancelado'))
 );
 
 -- Para bancos já existentes (tabela criada sem as colunas): garante tudo
@@ -202,9 +209,17 @@ alter table public.pagamentos add column if not exists valor numeric(10,2) not n
 alter table public.pagamentos add column if not exists status text not null default 'aberto';
 alter table public.pagamentos add column if not exists forma text;
 alter table public.pagamentos add column if not exists data_pagamento timestamptz;
+alter table public.pagamentos add column if not exists data_vencimento date;
+alter table public.pagamentos add column if not exists confirmado_por text;
+alter table public.pagamentos add column if not exists comprovante_url text;
 alter table public.pagamentos add column if not exists created_at timestamptz not null default now();
 
+-- Ajusta o check constraint de status caso já exista com a regra antiga
+alter table public.pagamentos drop constraint if exists pagamentos_status_check;
+alter table public.pagamentos add constraint pagamentos_status_check check (status in ('aberto', 'aguardando_confirmacao', 'pago', 'atrasado', 'cancelado'));
+
 create index if not exists pagamentos_aluno_idx on public.pagamentos (aluno_id, competencia desc);
+create index if not exists pagamentos_status_idx on public.pagamentos (status);
 
 -- ---------------------------------------------------------------------
 -- Tabela: avaliacoes (avaliação física do aluno)
@@ -492,9 +507,15 @@ create policy "Aluno: ler pagamentos"
   on public.pagamentos for select
   using (auth.role() = 'anon');
 
--- Portal: Alunos podem inserir pagamentos (auto-registro)
+-- Portal: Alunos podem inserir pagamentos (auto-registro / notificação de pagamento)
 create policy "Aluno: inserir pagamento"
   on public.pagamentos for insert
+  with check (auth.role() = 'anon');
+
+-- Portal: Alunos podem atualizar pagamentos (informar pagamento)
+create policy "Aluno: atualizar pagamento"
+  on public.pagamentos for update
+  using (auth.role() = 'anon')
   with check (auth.role() = 'anon');
 
 -- Portal: Alunos podem atualizar próprio registro (perfil)

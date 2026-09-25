@@ -271,22 +271,32 @@ export default function Treinos() {
     }
   }
 
-  // ----- Macrociclo -----
+  // ----- Macrociclo / Microciclos (12 semanas) -----
   const salvarMacrociclo = async () => {
     if (!alunoId) {
       toast('Selecione um aluno primeiro.', 'aviso')
       return
     }
     const preenchidas = semanas.filter(
-      (s) => s.foco || s.volume || s.intensidade || s.obs
+      (s) => (s.foco && s.foco.trim()) || (s.volume && s.volume.trim()) || (s.intensidade && s.intensidade.trim()) || (s.obs && s.obs.trim())
     )
+    if (preenchidas.length === 0) {
+      toast('Preencha ao menos uma semana do microciclo/planejamento antes de salvar.', 'aviso')
+      return
+    }
     setSalvandoMacro(true)
     try {
-      await salvarMacro(alunoId, preenchidas)
-      toast(`Macrociclo salvo (${preenchidas.length} semana(s) preenchidas).`)
+      const salvo = await salvarMacro(alunoId, preenchidas)
+      // Revalida imediatamente o estado local das semanas com o que foi persistido
+      if (salvo?.semanas_json) {
+        setSemanas(
+          SEMANAS_VAZIAS.map((base, i) => ({ ...base, ...(salvo.semanas_json[i] || {}) }))
+        )
+      }
+      toast(`Planejamento de treino salvo com sucesso (${preenchidas.length} semana(s) preenchida(s)).`)
       setModalMacro(false)
     } catch (e) {
-      toast(e.message || 'Erro ao salvar o macrociclo. Verifique se a tabela macrociclo existe no Supabase.', 'erro')
+      toast(e.message || 'Erro ao salvar o planejamento. Verifique sua conexão ou se a tabela existe no Supabase.', 'erro')
     } finally {
       setSalvandoMacro(false)
     }
