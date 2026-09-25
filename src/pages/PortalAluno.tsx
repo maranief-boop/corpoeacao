@@ -46,7 +46,9 @@ import {
   CalendarDays,
   Timer,
   TrendingUp,
-  X
+  X,
+  Star,
+  ExternalLink
 } from 'lucide-react'
 import fundoAcademia from '../assets/fundo.png'
 import { GraficoLinhaBpm } from '../components/Graficos'
@@ -468,6 +470,25 @@ export default function PortalAluno() {
   const [execucaoAtiva, setExecucaoAtiva] = useState<{ treino: Treino; indice: number } | null>(null)
 
   const aluno = sessao?.aluno ?? null
+
+  // ---------- Card de incentivo de Avaliação no Google ----------
+  const [avaliacaoGoogleDispensada, setAvaliacaoGoogleDispensada] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('dispensar_avaliacao_google') === 'true'
+    } catch {
+      return false
+    }
+  })
+
+  const dispensarAvaliacaoGoogle = (motivo: 'ja_avaliei' | 'mais_tarde') => {
+    try {
+      localStorage.setItem('dispensar_avaliacao_google', 'true')
+      if (motivo === 'ja_avaliei') {
+        toast('Muito obrigado pela sua avaliação e carinho! ⭐')
+      }
+    } catch {}
+    setAvaliacaoGoogleDispensada(true)
+  }
 
   // ---------- Perfil do aluno ----------
   const [perfilEditando, setPerfilEditando] = useState(false)
@@ -1675,6 +1696,79 @@ export default function PortalAluno() {
         </header>
 
         <main className="mx-auto mt-6 w-full max-w-md space-y-4 px-4">
+          {/* ---------- Card Dinâmico de Incentivo a Avaliação no Google ---------- */}
+          {!avaliacaoGoogleDispensada && (
+            <div
+              style={{
+                backgroundColor: 'rgba(24, 24, 27, 0.94)',
+                borderColor: 'rgba(63, 63, 70, 0.5)'
+              }}
+              className="relative overflow-hidden rounded-3xl border p-5 shadow-2xl backdrop-blur-md transition-all duration-300"
+            >
+              {/* Fechar rápido (X) */}
+              <button
+                onClick={() => dispensarAvaliacaoGoogle('mais_tarde')}
+                className="absolute right-3.5 top-3.5 rounded-full p-1.5 text-zinc-400 transition hover:bg-white/10 hover:text-white"
+                title="Fechar por enquanto"
+                aria-label="Dispensar aviso"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+              <div className="flex items-start gap-3.5">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-400 ring-1 ring-inset ring-amber-500/30 shadow-inner">
+                  <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+                </span>
+                <div className="pr-6">
+                  <h3 className="text-sm font-extrabold text-white flex items-center gap-1.5">
+                    Sua opinião é fundamental! ⭐
+                  </h3>
+                  <p className="mt-1 text-xs leading-relaxed text-zinc-300 font-medium">
+                    Gostando da sua evolução? Deixe uma avaliação 5 estrelas no Google e ajude a Corpo & Ação!
+                  </p>
+                </div>
+              </div>
+
+              {/* Estrelas douradas centralizadas */}
+              <div className="my-3.5 flex items-center justify-center gap-1 text-amber-400">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Star key={i} className="h-5 w-5 fill-amber-400 drop-shadow-sm transition-transform hover:scale-125" />
+                ))}
+              </div>
+
+              {/* Botão Principal de Avaliação */}
+              <a
+                href={config.google_review_url || 'https://search.google.com/local/writereview?placeid=ChIJYa6MwVUnl5QRk0jTuflOcsA'}
+                target="_blank"
+                rel="noreferrer"
+                style={{ backgroundColor: config.cor_primaria || '#DC2626' }}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl py-3 text-xs font-black text-white shadow-lg transition-all duration-300 hover:brightness-110 active:scale-[0.98]"
+              >
+                <Star className="h-4 w-4 fill-white" />
+                Avaliar no Google
+                <ExternalLink className="h-3.5 w-3.5 opacity-80" />
+              </a>
+
+              {/* Ações de dispensa: "Já avaliei" e "Mais tarde" */}
+              <div className="mt-2.5 flex items-center justify-between text-[11px] text-zinc-400 px-1">
+                <button
+                  type="button"
+                  onClick={() => dispensarAvaliacaoGoogle('ja_avaliei')}
+                  className="font-medium text-emerald-400 hover:text-emerald-300 hover:underline transition"
+                >
+                  ✓ Já avaliei no Google
+                </button>
+                <button
+                  type="button"
+                  onClick={() => dispensarAvaliacaoGoogle('mais_tarde')}
+                  className="font-medium text-zinc-400 hover:text-zinc-200 transition"
+                >
+                  Lembrar mais tarde
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* ---------- Grade 1: Check-in + Frequência Cardíaca ---------- */}
           <div className="grid grid-cols-2 gap-3">
             <TileCard
@@ -3314,6 +3408,19 @@ export default function PortalAluno() {
               )}
             </div>
           )}
+
+          {/* Link discreto no rodapé para avaliação no Google */}
+          <div className="pt-1">
+            <a
+              href={config.google_review_url || 'https://search.google.com/local/writereview?placeid=ChIJYa6MwVUnl5QRk0jTuflOcsA'}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 px-3.5 py-1.5 text-xs font-semibold text-amber-300 transition-all hover:bg-amber-500/20 hover:text-amber-200 active:scale-95"
+            >
+              <span>⭐</span> Avaliar a academia no Google
+              <ExternalLink className="h-3 w-3 opacity-70" />
+            </a>
+          </div>
 
           <p className="text-xs font-medium text-white/50">
             © {new Date().getFullYear()} {config.nome_academia} · Portal do Aluno

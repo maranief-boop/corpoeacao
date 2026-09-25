@@ -24,7 +24,9 @@ import {
   Loader2,
   ExternalLink,
   Smartphone,
-  Eye
+  Eye,
+  Star,
+  Globe
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { useToast } from '../components/Toast'
@@ -186,22 +188,25 @@ export default function Configuracoes() {
   const { toast } = useToast()
 
   const [form, setForm] = useState({
-    nome_academia: config.nome_academia || 'Academia Corpo e Ação',
+    nome_academia: config.nome_academia || 'Academia Corpo & Ação Feminina',
     logo_url: config.logo_url || '',
     fundo_portal_url: config.fundo_portal_url || '',
     favicon_url: config.favicon_url || '',
-    cor_primaria: config.cor_primaria || '#16a34a',
-    cor_secundaria: config.cor_secundaria || '#059669',
+    cor_primaria: config.cor_primaria || '#DC2626',
+    cor_secundaria: config.cor_secundaria || '#2563EB',
     cor_card: config.cor_card || 'rgba(24, 24, 27, 0.94)',
     card_bg_style: config.card_bg_style || 'solid',
     whatsapp: config.whatsapp || '(18) 98109-3334',
     instagram: config.instagram || '@academia.corpoeacao',
-    endereco: config.endereco || 'R. Rui Barbosa, 603, Centro, Mirandópolis - SP'
+    endereco: config.endereco || 'R. Rui Barbosa, 603 - Centro, Mirandópolis - SP',
+    google_place_id: config.google_place_id || 'ChIJYa6MwVUnl5QRk0jTuflOcsA',
+    google_review_url: config.google_review_url || 'https://search.google.com/local/writereview?placeid=ChIJYa6MwVUnl5QRk0jTuflOcsA',
+    google_widget_code: config.google_widget_code || '980e151f-0c72-4906-be89-6763986af7eb'
   })
 
   const [salvando, setSalvando] = useState(false)
   const [copiadoSql, setCopiadoSql] = useState(false)
-  const [abaAtiva, setAbaAtiva] = useState('visual') // 'visual' | 'contato' | 'banco'
+  const [abaAtiva, setAbaAtiva] = useState('visual') // 'visual' | 'google' | 'contato' | 'banco'
 
   const set = (campo, valor) => setForm((f) => ({ ...f, [campo]: valor }))
 
@@ -225,7 +230,10 @@ export default function Configuracoes() {
         card_bg_style: form.card_bg_style,
         whatsapp: form.whatsapp.trim(),
         instagram: form.instagram.trim(),
-        endereco: form.endereco.trim()
+        endereco: form.endereco.trim(),
+        google_place_id: form.google_place_id.trim(),
+        google_review_url: form.google_review_url.trim(),
+        google_widget_code: form.google_widget_code
       })
       toast('Configurações salvas e aplicadas em tempo real!')
     } catch (e) {
@@ -237,14 +245,18 @@ export default function Configuracoes() {
 
   const comandoSql = `-- Execute no SQL Editor do Supabase se ainda não rodou a migração:
 ALTER TABLE public.configuracoes 
-  ADD COLUMN IF NOT EXISTS cor_secundaria text DEFAULT '#059669',
+  ADD COLUMN IF NOT EXISTS cor_primaria text DEFAULT '#DC2626',
+  ADD COLUMN IF NOT EXISTS cor_secundaria text DEFAULT '#2563EB',
   ADD COLUMN IF NOT EXISTS cor_card text DEFAULT 'rgba(24, 24, 27, 0.94)',
   ADD COLUMN IF NOT EXISTS card_bg_style text DEFAULT 'solid',
   ADD COLUMN IF NOT EXISTS fundo_portal_url text,
   ADD COLUMN IF NOT EXISTS favicon_url text,
   ADD COLUMN IF NOT EXISTS whatsapp text DEFAULT '(18) 98109-3334',
   ADD COLUMN IF NOT EXISTS instagram text DEFAULT '@academia.corpoeacao',
-  ADD COLUMN IF NOT EXISTS endereco text DEFAULT 'R. Rui Barbosa, 603, Centro, Mirandópolis - SP';
+  ADD COLUMN IF NOT EXISTS endereco text DEFAULT 'R. Rui Barbosa, 603 - Centro, Mirandópolis - SP',
+  ADD COLUMN IF NOT EXISTS google_place_id text DEFAULT 'ChIJYa6MwVUnl5QRk0jTuflOcsA',
+  ADD COLUMN IF NOT EXISTS google_review_url text DEFAULT 'https://search.google.com/local/writereview?placeid=ChIJYa6MwVUnl5QRk0jTuflOcsA',
+  ADD COLUMN IF NOT EXISTS google_widget_code text DEFAULT '980e151f-0c72-4906-be89-6763986af7eb';
 
 -- Storage: garante o bucket 'branding' público
 INSERT INTO storage.buckets (id, name, public)
@@ -286,7 +298,7 @@ ON CONFLICT (id) DO NOTHING;`
         </div>
 
         {/* Alternador de abas rápidas */}
-        <div className="flex rounded-xl bg-zinc-100 p-1 dark:bg-zinc-800 self-start sm:self-auto">
+        <div className="flex flex-wrap rounded-xl bg-zinc-100 p-1 dark:bg-zinc-800 self-start sm:self-auto gap-1">
           <button
             type="button"
             onClick={() => setAbaAtiva('visual')}
@@ -297,6 +309,18 @@ ON CONFLICT (id) DO NOTHING;`
             }`}
           >
             Marca & Cores
+          </button>
+          <button
+            type="button"
+            onClick={() => setAbaAtiva('google')}
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+              abaAtiva === 'google'
+                ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white'
+                : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
+            }`}
+          >
+            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+            Google & Avaliações
           </button>
           <button
             type="button"
@@ -634,6 +658,118 @@ ON CONFLICT (id) DO NOTHING;`
                 </div>
               </div>
             </Card>
+          </div>
+        )}
+
+        {/* ABA: INTEGRAÇÃO GOOGLE & AVALIAÇÕES */}
+        {abaAtiva === 'google' && (
+          <div className="space-y-6">
+            <Card className="p-6 space-y-6">
+              <div className="border-b border-zinc-200 pb-3 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                    <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                    Integração Google & Avaliações (Google Meu Negócio)
+                  </h2>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    Conecte a ficha oficial do Google para captar avaliações 5 estrelas das alunas no Site e no Portal do Aluno.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 ring-1 ring-emerald-500/20">
+                    <Check className="h-3 w-3" /> Verificado no Google
+                  </span>
+                </div>
+              </div>
+
+              {/* Place ID e Link Direto */}
+              <div className="space-y-5">
+                <div>
+                  <Label className="flex items-center gap-1.5">
+                    <Globe className="h-3.5 w-3.5 text-primary-500" /> Google Place ID
+                  </Label>
+                  <Input
+                    value={form.google_place_id}
+                    onChange={(e) => set('google_place_id', e.target.value)}
+                    placeholder="Ex.: ChIJYa6MwVUnl5QRk0jTuflOcsA"
+                    className="font-mono text-xs"
+                  />
+                  <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                    Identificador único do estabelecimento no Google Maps / Meu Negócio (Place ID padrão: <span className="font-mono text-zinc-700 dark:text-zinc-300">ChIJYa6MwVUnl5QRk0jTuflOcsA</span>).
+                  </p>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label className="flex items-center gap-1.5 mb-0">
+                      <ExternalLink className="h-3.5 w-3.5 text-primary-500" /> Link de Avaliação Direta (Google Review URL)
+                    </Label>
+                    {form.google_review_url && (
+                      <a
+                        href={form.google_review_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary-600 hover:underline dark:text-primary-400"
+                      >
+                        Testar link direto <ExternalLink className="h-2.5 w-2.5" />
+                      </a>
+                    )}
+                  </div>
+                  <Input
+                    value={form.google_review_url}
+                    onChange={(e) => set('google_review_url', e.target.value)}
+                    placeholder="https://search.google.com/local/writereview?placeid=..."
+                    inputMode="url"
+                  />
+                  <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                    Link oficial que abre a tela de 5 estrelas e depoimento do Google em 1 clique para a aluna.
+                  </p>
+                </div>
+
+                <div className="border-t border-zinc-100 pt-5 dark:border-zinc-800">
+                  <div className="flex items-center justify-between mb-1">
+                    <Label className="flex items-center gap-1.5 mb-0">
+                      <Sparkles className="h-3.5 w-3.5 text-amber-500" /> Código do Widget de Avaliações / Widget ID (Elfsight)
+                    </Label>
+                    <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400">
+                      ID Oficial: 980e151f-0c72-4906-be89-6763986af7eb
+                    </span>
+                  </div>
+                  <p className="mb-2 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                    Informe o ID do widget da Elfsight (<code className="rounded bg-zinc-100 px-1 py-0.5 font-mono text-primary-600 dark:bg-zinc-800 dark:text-primary-400">980e151f-0c72-4906-be89-6763986af7eb</code>) ou cole o código embed completo gerado na plataforma Elfsight. O sistema renderiza o widget oficial de Avaliações do Google no Site Institucional.
+                  </p>
+                  <textarea
+                    rows={4}
+                    value={form.google_widget_code}
+                    onChange={(e) => set('google_widget_code', e.target.value)}
+                    placeholder="980e151f-0c72-4906-be89-6763986af7eb ou cole o script embed da Elfsight"
+                    className="w-full rounded-xl border border-zinc-300 bg-white p-3 font-mono text-xs text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500"
+                  />
+                </div>
+              </div>
+            </Card>
+
+            {/* Destaque Informativo dos Benefícios */}
+            <div className="rounded-2xl border border-blue-200/70 bg-blue-50/50 p-5 dark:border-blue-900/50 dark:bg-blue-950/20">
+              <div className="flex items-start gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                  <Star className="h-5 w-5 fill-current" />
+                </div>
+                <div className="space-y-1 text-xs text-zinc-700 dark:text-zinc-300">
+                  <p className="font-bold text-sm text-zinc-900 dark:text-zinc-100">
+                    Como funciona nos canais da academia?
+                  </p>
+                  <ul className="list-disc pl-4 space-y-1 text-zinc-600 dark:text-zinc-400">
+                    <li>
+                      <strong className="text-zinc-800 dark:text-zinc-200">Site Institucional:</strong> exibe a seção de Depoimentos com nota 5.0, selo oficial do Google e o botão para novas alunas e visitantes avaliarem diretamente.
+                    </li>
+                    <li>
+                      <strong className="text-zinc-800 dark:text-zinc-200">Portal do Aluno:</strong> exibe um card convidativo com estrelas douradas para estimular alunas ativas a deixarem feedbacks 5 estrelas no Google, com opção de dispensa resiliente.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 

@@ -18,7 +18,7 @@ const AppContext = createContext(null)
 
 const CONFIG_INICIAL = {
   id: 1,
-  nome_academia: 'Academia Corpo e Ação',
+  nome_academia: 'Academia Corpo & Ação Feminina',
   logo_url: '/logo.png',
   cor_primaria: '#DC2626',
   cor_secundaria: '#2563EB',
@@ -28,7 +28,10 @@ const CONFIG_INICIAL = {
   favicon_url: '',
   whatsapp: '(18) 98109-3334',
   instagram: '@academia.corpoeacao',
-  endereco: 'R. Rui Barbosa, 603, Centro, Mirandópolis - SP'
+  endereco: 'R. Rui Barbosa, 603 - Centro, Mirandópolis - SP',
+  google_place_id: 'ChIJYa6MwVUnl5QRk0jTuflOcsA',
+  google_review_url: 'https://search.google.com/local/writereview?placeid=ChIJYa6MwVUnl5QRk0jTuflOcsA',
+  google_widget_code: '980e151f-0c72-4906-be89-6763986af7eb'
 }
 
 function aplicarFavicon(url) {

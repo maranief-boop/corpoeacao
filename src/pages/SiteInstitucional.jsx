@@ -3,7 +3,7 @@
 // O formulário de captura de leads agora grava no SUPABASE (tabela
 // "leads") — mesma instância do sistema — em vez do Firestore.
 // =====================================================================
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   Dumbbell,
   Flame,
@@ -27,7 +27,8 @@ import {
   Clapperboard,
   CalendarDays,
   Clock,
-  Loader2
+  Loader2,
+  ExternalLink
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useLeads } from '../hooks/useLeads'
@@ -43,7 +44,7 @@ const HORARIOS = ['07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00',
 const NAV = [
   { id: 'modalidades', rotulo: 'Modalidades' },
   { id: 'estrutura', rotulo: 'Estrutura' },
-  { id: 'depoimentos', rotulo: 'Depoimentos' },
+  { id: 'depoimentos', rotulo: 'Avaliações' },
   { id: 'calculadora', rotulo: 'IMC' }
 ]
 
@@ -51,12 +52,64 @@ function rolarPara(id) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
 }
 
-function Estrelas() {
+function GoogleIcon({ className = 'h-5 w-5' }) {
   return (
-    <div className="mb-3 flex gap-1 text-yellow-400">
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
+      <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z" />
+      <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.97 0 12s.45 3.82 1.25 5.42l4.03-3.15z" />
+      <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z" />
+    </svg>
+  )
+}
+
+function EstrelasGoogle({ tamanho = 'h-4 w-4' }) {
+  return (
+    <div className="flex gap-1 text-amber-400">
       {[1, 2, 3, 4, 5].map((i) => (
-        <Star key={i} className="h-4 w-4 fill-current" />
+        <Star key={i} className={`${tamanho} fill-amber-400`} />
       ))}
+    </div>
+  )
+}
+
+function ElfsightGoogleReviews({ widgetId }) {
+  useEffect(() => {
+    const scriptId = 'elfsight-platform-script'
+    let script = document.getElementById(scriptId)
+
+    if (!script) {
+      script = document.createElement('script')
+      script.id = scriptId
+      script.src = 'https://elfsightcdn.com/platform.js'
+      script.async = true
+      document.body.appendChild(script)
+    } else {
+      // Se o script já está no documento (navegação SPA), aciona re-inicialização
+      try {
+        if (window.eapps && typeof window.eapps.init === 'function') {
+          window.eapps.init()
+        }
+      } catch (err) {
+        // silencioso
+      }
+    }
+  }, [widgetId])
+
+  // Extrai o ID limpo (suporta o ID direto ou extrai da classe elfsight-app-...)
+  const idLimpo =
+    (widgetId || '980e151f-0c72-4906-be89-6763986af7eb')
+      .toString()
+      .match(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i)?.[0] ||
+    '980e151f-0c72-4906-be89-6763986af7eb'
+
+  return (
+    <div className="w-full min-h-[160px] flex justify-center">
+      <div
+        key={idLimpo}
+        className={`elfsight-app-${idLimpo}`}
+        data-elfsight-app-lazy
+      />
     </div>
   )
 }
@@ -65,9 +118,13 @@ export default function SiteInstitucional() {
   const { criar } = useLeads()
   const { toast } = useToast()
   const { config } = useApp()
-  const nomeAcademia = config.nome_academia || 'Academia Corpo e Ação'
+  const nomeAcademia = config.nome_academia || 'Academia Corpo & Ação Feminina'
   const corPrimaria = config.cor_primaria || '#DC2626'
   const corSecundaria = config.cor_secundaria || '#2563EB'
+  const googleReviewUrl =
+    config.google_review_url ||
+    'https://search.google.com/local/writereview?placeid=ChIJYa6MwVUnl5QRk0jTuflOcsA'
+  const googleWidgetCode = config.google_widget_code || ''
 
   const [menuAberto, setMenuAberto] = useState(false)
   const [modalLead, setModalLead] = useState(false)
@@ -178,14 +235,14 @@ export default function SiteInstitucional() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="flex items-center gap-3 text-lg font-extrabold tracking-tight transition-opacity hover:opacity-90"
+            className="flex items-center gap-3 text-lg font-extrabold tracking-tight transition-opacity hover:opacity-90 bg-transparent border-0 p-0 outline-none"
           >
             <img
               src={config.logo_url || logoAcademia}
               alt={nomeAcademia}
-              className="h-10 w-auto max-h-12 max-w-[150px] object-contain drop-shadow-md"
+              className="h-10 sm:h-11 w-auto max-h-12 max-w-[160px] object-contain drop-shadow-md bg-transparent border-0 ring-0"
             />
-            <span className="text-white drop-shadow-sm">{nomeAcademia}</span>
+            <span className="text-white drop-shadow-sm font-extrabold tracking-tight">{nomeAcademia}</span>
           </button>
 
           <nav className="hidden items-center gap-6 text-sm md:flex">
@@ -247,9 +304,10 @@ export default function SiteInstitucional() {
         className="relative flex min-h-screen items-center overflow-hidden pt-16"
         style={{ background: `url(${config.fundo_portal_url || fundoAcademia}) center center / cover no-repeat` }}
       >
-        {/* Camada de sobreposição densa sobre a foto da academia */}
-        <div className="absolute inset-0 bg-black/60" />
-        <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-zinc-950 via-zinc-950/80 to-transparent" />
+        {/* Camada de sobreposição densa e gradiente reforçado sobre a foto para máxima legibilidade */}
+        <div className="absolute inset-0 bg-black/60 md:bg-black/50" />
+        <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/80 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/50 to-transparent md:hidden" />
         
         {/* Luzes dinâmicas de fundo com as cores da marca */}
         <div className="absolute inset-0 opacity-15 pointer-events-none">
@@ -434,67 +492,56 @@ export default function SiteInstitucional() {
         </div>
       </section>
 
-      {/* ---------- Depoimentos ---------- */}
-      <section id="depoimentos" className="bg-[#0f0f0f] py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-14 text-center">
+      {/* ---------- Depoimentos / Avaliações Google Meu Negócio ---------- */}
+      <section id="depoimentos" className="bg-[#0c0c0d] py-20 relative overflow-hidden">
+        {/* Glow sutil de fundo com as cores da marca */}
+        <div
+          className="absolute -top-32 left-1/2 -translate-x-1/2 h-72 w-96 rounded-full blur-[140px] opacity-10 pointer-events-none"
+          style={{ backgroundColor: corPrimaria }}
+        />
+
+        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-10 text-center">
             <span
-              style={{ color: corSecundaria }}
-              className="text-xs font-bold uppercase tracking-widest"
+              style={{
+                backgroundColor: `${corSecundaria}20`,
+                borderColor: `${corSecundaria}40`,
+                color: '#ffffff'
+              }}
+              className="inline-flex items-center gap-2 rounded-full border px-4 py-1 text-xs font-bold uppercase tracking-widest shadow-sm"
             >
-              Depoimentos
+              <GoogleIcon className="h-3.5 w-3.5" />
+              Google Meu Negócio · Avaliações Oficiais
             </span>
-            <h2 className="mt-2 text-3xl font-extrabold text-white sm:text-4xl">
+            <h2 className="mt-4 text-3xl font-extrabold text-white sm:text-4xl">
               Quem treina aqui recomenda
             </h2>
+            <p className="mx-auto mt-3 max-w-2xl text-zinc-400 font-medium">
+              Avaliações reais e verificadas de quem vive a transformação no dia a dia da {nomeAcademia}.
+            </p>
           </div>
-          <div className="grid gap-8 md:grid-cols-3">
-            {[
-              {
-                texto:
-                  '"Melhor academia de Mirandópolis! Em 3 meses já vi resultados incríveis. Os professores são muito atenciosos."',
-                iniciais: 'CL',
-                nome: 'Carlos Lima',
-                periodo: 'Aluno há 8 meses'
-              },
-              {
-                texto:
-                  '"As aulas de Jump e Spinning são demais! Ambiente climatizado e equipamentos novos fazem toda diferença."',
-                iniciais: 'AM',
-                nome: 'Ana Martins',
-                periodo: 'Aluna há 1 ano'
-              },
-              {
-                texto:
-                  '"Treino há 5 anos e nunca vi acompanhamento tão personalizado. O HIIT mudou meu condicionamento físico!"',
-                iniciais: 'RF',
-                nome: 'Rafael Fernandes',
-                periodo: 'Aluno há 2 anos'
-              }
-            ].map((d) => (
-              <div
-                key={d.nome}
-                className="rounded-2xl border border-zinc-800 bg-[#1a1a1a] p-6 shadow-lg transition-all duration-300 hover:scale-[1.02] hover:border-zinc-700"
-              >
-                <Estrelas />
-                <p className="mb-4 text-sm leading-relaxed text-zinc-300">{d.texto}</p>
-                <div className="flex items-center gap-3">
-                  <div
-                    style={{
-                      backgroundColor: `${corSecundaria}25`,
-                      color: corSecundaria
-                    }}
-                    className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-black ring-1 ring-inset ring-white/10"
-                  >
-                    {d.iniciais}
-                  </div>
-                  <div>
-                    <strong className="text-sm text-white">{d.nome}</strong>
-                    <span className="block text-xs text-zinc-400">{d.periodo}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+
+          {/* Container elegante com largura máxima para o Widget Oficial Elfsight */}
+          <div className="mx-auto max-w-6xl px-4 py-8 rounded-3xl border border-zinc-800/80 bg-[#141416]/90 shadow-2xl backdrop-blur-sm">
+            <ElfsightGoogleReviews widgetId={googleWidgetCode || '980e151f-0c72-4906-be89-6763986af7eb'} />
+          </div>
+
+          {/* Botão de apoio direto abaixo do widget */}
+          <div className="mt-8 text-center">
+            <a
+              href={googleReviewUrl}
+              target="_blank"
+              rel="noreferrer"
+              style={{ backgroundColor: corPrimaria }}
+              className="inline-flex items-center justify-center gap-2.5 rounded-xl px-7 py-3.5 text-sm font-extrabold text-white shadow-xl shadow-red-950/40 transition-all duration-300 hover:brightness-110 hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <GoogleIcon className="h-4 w-4 bg-white rounded-full p-0.5" />
+              Deixar uma avaliação no Google
+              <ExternalLink className="h-4 w-4" />
+            </a>
+            <p className="mt-2.5 text-xs text-zinc-500">
+              Sua avaliação ajuda a fortalecer a comunidade da {nomeAcademia} no centro de Mirandópolis.
+            </p>
           </div>
         </div>
       </section>
@@ -705,12 +752,24 @@ export default function SiteInstitucional() {
               <h4 className="mb-4 font-bold text-white">Endereço</h4>
               <address className="text-sm leading-relaxed text-zinc-400 not-italic">
                 <MapPin className="mr-1.5 inline h-3.5 w-3.5" style={{ color: corSecundaria }} />
-                {config.endereco || 'R. Rui Barbosa, 603, Centro, Mirandópolis - SP'}
+                {config.endereco || 'R. Rui Barbosa, 603 - Centro, Mirandópolis - SP'}
               </address>
               <p className="mt-3 text-sm text-zinc-400">
                 <Phone className="mr-1.5 inline h-3.5 w-3.5" style={{ color: corSecundaria }} />{' '}
                 {config.whatsapp || '(18) 98109-3334'}
               </p>
+              <div className="mt-4 pt-3 border-t border-zinc-800/80">
+                <a
+                  href={googleReviewUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-400 hover:text-amber-300 transition"
+                >
+                  <Star className="h-3.5 w-3.5 fill-amber-400" />
+                  Deixe sua avaliação no Google
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
             </div>
           </div>
           <div className="border-t border-zinc-800 pt-6 text-center text-xs text-zinc-500">
@@ -722,12 +781,16 @@ export default function SiteInstitucional() {
         </div>
       </footer>
 
-      {/* ---------- WhatsApp float pulsante ---------- */}
+      {/* ---------- WhatsApp float pulsante com a cor da marca ---------- */}
       <div className="fixed bottom-24 right-4 z-40 md:bottom-6">
-        <span className="absolute -inset-1 animate-ping rounded-full bg-green-500 opacity-60 pointer-events-none" />
+        <span
+          className="absolute -inset-1 animate-ping rounded-full opacity-60 pointer-events-none"
+          style={{ backgroundColor: corPrimaria }}
+        />
         <button
           onClick={abrirLead}
-          className="relative flex h-14 w-14 items-center justify-center rounded-full bg-green-500 text-white shadow-2xl shadow-green-500/50 transition-transform duration-300 hover:scale-110 active:scale-95 animate-pulse"
+          style={{ backgroundColor: corPrimaria }}
+          className="relative flex h-14 w-14 items-center justify-center rounded-full text-white shadow-2xl transition-transform duration-300 hover:scale-110 hover:brightness-110 active:scale-95 animate-pulse"
           aria-label="Fale conosco pelo WhatsApp"
         >
           <MessageCircle className="h-7 w-7" />
