@@ -228,8 +228,34 @@ export default function SiteInstitucional() {
     setResultadoImc({ imc: imc.toFixed(1), classificacao, recomendacao })
   }
 
+  const obterEstiloStatusImc = (classificacao) => {
+    switch (classificacao) {
+      case 'Abaixo do peso':
+        return {
+          background: 'linear-gradient(135deg, #0284c7, #0369a1)',
+          label: 'Abaixo do Peso'
+        }
+      case 'Peso normal':
+        return {
+          background: 'linear-gradient(135deg, #10b981, #059669)',
+          label: 'Peso Ideal / Normal'
+        }
+      case 'Sobrepeso':
+        return {
+          background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+          label: 'Sobrepeso'
+        }
+      case 'Obesidade':
+      default:
+        return {
+          background: 'linear-gradient(135deg, #ef4444, #b91c1c)',
+          label: 'Obesidade'
+        }
+    }
+  }
+
   return (
-    <div className="bg-[#0f0f0f] font-sans text-white">
+    <div className="bg-[#0f0f0f] font-sans text-white overflow-x-hidden min-h-screen">
       {/* ---------- Header ---------- */}
       <header className="fixed inset-x-0 top-0 z-40 border-b border-zinc-800/80 bg-[#0a0a0a]/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
@@ -301,86 +327,72 @@ export default function SiteInstitucional() {
       {/* ---------- Hero ---------- */}
       <section
         id="hero"
-        className="relative flex min-h-screen items-center overflow-hidden pt-16"
+        className="relative flex min-h-screen items-center justify-center overflow-hidden pt-20 pb-16"
         style={{ background: `url(${config.fundo_portal_url || fundoAcademia}) center center / cover no-repeat` }}
       >
-        {/* Camada de sobreposição densa e gradiente reforçado sobre a foto para máxima legibilidade */}
-        <div className="absolute inset-0 bg-black/60 md:bg-black/50" />
-        <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/80 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/50 to-transparent md:hidden" />
+        {/* Overlay escuro balanceado para garantir legibilidade impecável do texto sem ocultar a identidade da academia */}
+        <div className="absolute inset-0 bg-black/75 md:bg-black/70 backdrop-brightness-90" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/50 to-[#0f0f0f]" />
         
-        {/* Luzes dinâmicas de fundo com as cores da marca */}
-        <div className="absolute inset-0 opacity-15 pointer-events-none">
+        {/* Luzes dinâmicas sutis de fundo com as cores da marca */}
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
           <div
-            className="absolute left-10 top-20 h-72 w-72 rounded-full blur-[140px]"
+            className="absolute left-1/2 -top-20 -translate-x-1/2 h-80 w-80 rounded-full blur-[150px]"
             style={{ backgroundColor: corPrimaria }}
-          />
-          <div
-            className="absolute bottom-20 right-10 h-96 w-96 rounded-full blur-[160px]"
-            style={{ backgroundColor: corSecundaria }}
           />
         </div>
 
-        <div className="relative z-10 mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-          <div className="max-w-3xl">
-            <span
-              style={{
-                backgroundColor: `${corSecundaria}25`,
-                borderColor: `${corSecundaria}50`,
-                color: '#ffffff'
-              }}
-              className="mb-6 inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-xs font-bold shadow-sm"
-            >
-              <MapPin className="h-3.5 w-3.5" style={{ color: corSecundaria }} /> Mirandópolis-SP
+        <div className="relative z-10 mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8 text-center flex flex-col items-center">
+          <span
+            style={{
+              backgroundColor: 'rgba(220, 38, 38, 0.15)',
+              borderColor: 'rgba(220, 38, 38, 0.45)',
+              color: '#ffffff'
+            }}
+            className="mb-6 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs sm:text-sm font-bold shadow-md tracking-wide"
+          >
+            <MapPin className="h-4 w-4 text-red-500" /> Mirandópolis - SP
+          </span>
+
+          <h1 className="mb-6 text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.15] text-white tracking-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
+            Transforme seu corpo e sua saúde
+            <span className="block mt-2 font-black text-red-600 drop-shadow-[0_2px_12px_rgba(220,38,38,0.35)]">
+              no coração de Mirandópolis
             </span>
-            <h1 className="mb-6 text-4xl font-extrabold leading-tight text-white sm:text-5xl lg:text-6xl drop-shadow-md">
-              Transforme seu corpo e sua saúde
-              <br />
-              <span
-                style={{
-                  backgroundImage: `linear-gradient(to right, ${corPrimaria}, ${corSecundaria})`,
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}
-                className="bg-clip-text text-transparent font-black"
-              >
-                no coração de Mirandópolis
-              </span>
-            </h1>
-            <p className="mb-8 max-w-2xl text-lg font-medium leading-relaxed text-zinc-200 drop-shadow-md sm:text-xl">
-              Metodologia comprovada para resultados reais. Equipamentos modernos,
-              ambiente climatizado e profissionais qualificados prontos para te
-              acompanhar do início ao fim.
-            </p>
-            <div className="flex flex-col gap-4 sm:flex-row">
-              <button
-                onClick={abrirLead}
-                style={{ backgroundColor: corPrimaria }}
-                className="inline-flex items-center justify-center gap-3 rounded-xl px-8 py-4 text-lg font-extrabold text-white shadow-xl transition-all duration-300 hover:brightness-110 hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <MessageCircle className="h-5 w-5" /> Agende sua Aula Experimental
-              </button>
-              <button
-                onClick={() => rolarPara('modalidades')}
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900/60 px-8 py-4 text-lg font-semibold text-zinc-200 backdrop-blur-sm transition-all duration-300 hover:border-zinc-500 hover:text-white hover:bg-zinc-800/80 active:scale-[0.98]"
-              >
-                Ver Modalidades <ArrowDown className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="mt-12 flex flex-wrap gap-6 text-sm text-zinc-300 font-medium">
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4" style={{ color: corSecundaria }} /> Seg a
-                Sex · 07h às 20h
-              </span>
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4" style={{ color: corSecundaria }} /> Aula
-                experimental gratuita
-              </span>
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4" style={{ color: corSecundaria }} /> Ambiente
-                climatizado
-              </span>
-            </div>
+          </h1>
+
+          <p className="mb-10 max-w-2xl text-base sm:text-lg lg:text-xl font-medium leading-relaxed text-zinc-200 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+            Metodologia comprovada para resultados reais. Equipamentos modernos,
+            ambiente climatizado e profissionais qualificados prontos para te
+            acompanhar do início ao fim.
+          </p>
+
+          <div className="flex w-full flex-col sm:flex-row items-center justify-center gap-4 max-w-md sm:max-w-none">
+            <button
+              onClick={abrirLead}
+              style={{ backgroundColor: corPrimaria }}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-3 rounded-xl px-8 py-4 text-base sm:text-lg font-extrabold text-white shadow-xl shadow-red-950/60 transition-all duration-300 hover:brightness-110 hover:shadow-[0_8px_25px_rgba(220,38,38,0.45)] hover:scale-[1.02] active:scale-[0.98] min-h-[48px]"
+            >
+              <MessageCircle className="h-5 w-5 text-white" /> Agende sua Aula Experimental
+            </button>
+            <button
+              onClick={() => rolarPara('modalidades')}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 bg-transparent px-8 py-4 text-base sm:text-lg font-bold text-white backdrop-blur-sm transition-all duration-300 hover:border-white hover:bg-white/10 active:scale-[0.98] min-h-[48px]"
+            >
+              Ver Modalidades <ArrowDown className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="mt-12 flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs sm:text-sm text-zinc-300 font-medium">
+            <span className="flex items-center gap-1.5 bg-black/40 px-3 py-1.5 rounded-lg border border-white/10 backdrop-blur-sm">
+              <CheckCircle2 className="h-4 w-4 text-red-500" /> Seg a Sex · 07h às 20h
+            </span>
+            <span className="flex items-center gap-1.5 bg-black/40 px-3 py-1.5 rounded-lg border border-white/10 backdrop-blur-sm">
+              <CheckCircle2 className="h-4 w-4 text-red-500" /> Aula experimental gratuita
+            </span>
+            <span className="flex items-center gap-1.5 bg-black/40 px-3 py-1.5 rounded-lg border border-white/10 backdrop-blur-sm">
+              <CheckCircle2 className="h-4 w-4 text-red-500" /> Ambiente climatizado
+            </span>
           </div>
         </div>
       </section>
@@ -428,23 +440,19 @@ export default function SiteInstitucional() {
             ].map((m) => (
               <div
                 key={m.titulo}
-                className="group rounded-2xl border border-zinc-800 bg-[#1a1a1a] p-8 text-center shadow-xl hover:scale-[1.02] hover:border-zinc-700 transition-all duration-300"
+                className="group card-glow-hover rounded-2xl border border-zinc-800 bg-[#1a1a1a] p-8 text-center shadow-xl cursor-default"
               >
                 <div
-                  style={{
-                    backgroundColor: `${corPrimaria}18`,
-                    color: corPrimaria
-                  }}
-                  className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full ring-1 ring-inset ring-white/10 transition-transform duration-300 group-hover:scale-110"
+                  className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-red-600/25 to-red-950/60 border border-red-500/50 text-red-500 shadow-md group-hover:from-red-600 group-hover:to-red-700 group-hover:text-white group-hover:border-red-400 group-hover:shadow-[0_0_20px_rgba(229,9,20,0.5)] transition-all duration-300"
                 >
-                  <m.icone className="h-7 w-7" />
+                  <m.icone className="h-8 w-8 transition-transform duration-300 group-hover:scale-110" />
                 </div>
-                <h3 className="mb-3 text-xl font-bold text-white">{m.titulo}</h3>
-                <p className="mb-5 text-sm leading-relaxed text-zinc-400">{m.texto}</p>
-                <ul className="space-y-1.5 text-xs text-zinc-400">
+                <h3 className="mb-3 text-xl font-bold text-white transition-colors duration-300 group-hover:text-red-400">{m.titulo}</h3>
+                <p className="mb-5 text-sm leading-relaxed text-zinc-300">{m.texto}</p>
+                <ul className="space-y-2 text-xs text-zinc-400">
                   {m.itens.map((i) => (
-                    <li key={i} className="flex items-center justify-center gap-1.5">
-                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0" style={{ color: corSecundaria }} />
+                    <li key={i} className="flex items-center justify-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-red-500" />
                       <span>{i}</span>
                     </li>
                   ))}
@@ -478,14 +486,13 @@ export default function SiteInstitucional() {
             ].map((e) => (
               <div
                 key={e.titulo}
-                className="group rounded-xl border border-zinc-800 bg-[#1a1a1a] p-6 text-center shadow-lg transition-all duration-300 hover:scale-[1.03] hover:border-zinc-700"
+                className="group card-glow-hover rounded-xl border border-zinc-800 bg-[#161616] p-6 text-center shadow-lg cursor-default"
               >
-                <e.icone
-                  className="mx-auto mb-3 h-8 w-8 transition-transform duration-300 group-hover:scale-110"
-                  style={{ color: corSecundaria }}
-                />
-                <h3 className="mb-1 text-sm font-bold text-white">{e.titulo}</h3>
-                <p className="text-xs text-zinc-400">{e.texto}</p>
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-600/10 border border-red-500/20 text-red-500 group-hover:bg-red-600 group-hover:text-white transition-all duration-300">
+                  <e.icone className="h-6 w-6 transition-transform duration-300 group-hover:scale-110" />
+                </div>
+                <h3 className="mb-1.5 text-sm font-bold text-white transition-colors duration-300 group-hover:text-red-400">{e.titulo}</h3>
+                <p className="text-xs text-zinc-400 leading-relaxed">{e.texto}</p>
               </div>
             ))}
           </div>
@@ -522,7 +529,7 @@ export default function SiteInstitucional() {
           </div>
 
           {/* Container elegante com largura máxima para o Widget Oficial Elfsight */}
-          <div className="mx-auto max-w-6xl px-4 py-8 rounded-3xl border border-zinc-800/80 bg-[#141416]/90 shadow-2xl backdrop-blur-sm">
+          <div className="mx-auto max-w-6xl px-4 py-8 rounded-3xl border border-zinc-800/80 bg-[#141416]/90 shadow-2xl backdrop-blur-sm card-glow-hover">
             <ElfsightGoogleReviews widgetId={googleWidgetCode || '980e151f-0c72-4906-be89-6763986af7eb'} />
           </div>
 
@@ -609,30 +616,39 @@ export default function SiteInstitucional() {
             <button
               onClick={calcularImc}
               style={{ backgroundColor: corPrimaria }}
-              className="w-full rounded-xl py-3.5 text-lg font-extrabold text-white shadow-lg transition hover:brightness-110 active:scale-98"
+              className="w-full min-h-[48px] rounded-xl py-3.5 text-base sm:text-lg font-extrabold text-white shadow-xl shadow-red-950/40 transition-all duration-300 hover:brightness-110 active:scale-[0.98] flex items-center justify-center gap-2"
             >
-              <Calculator className="mr-2 inline h-5 w-5" /> Calcular IMC
+              <Calculator className="h-5 w-5" /> Calcular IMC
             </button>
             {resultadoImc && (
-              <div className="mt-6">
-                <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5 text-center">
-                  <p className="text-sm text-zinc-400">Seu IMC é</p>
-                  <p className="mt-1 text-4xl font-black text-white">
+              <div className="mt-8 transition-all duration-300 animate-fadeIn">
+                <div className="rounded-2xl border border-zinc-800 bg-[#121214] p-6 text-center shadow-2xl relative overflow-hidden">
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-600 via-amber-500 to-emerald-500 opacity-60" />
+                  <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Seu Índice de Massa Corporal</p>
+                  <p className="mt-2 text-5xl font-black text-white tracking-tight">
                     {resultadoImc.imc}
                   </p>
-                  <p className="mt-1 font-bold" style={{ color: corSecundaria }}>
-                    {resultadoImc.classificacao}
-                  </p>
-                  <p className="mt-3 text-sm text-zinc-300">
+                  
+                  {/* Badge de status com gradiente moderno */}
+                  <div className="mt-4 flex justify-center">
+                    <span
+                      style={{ background: obterEstiloStatusImc(resultadoImc.classificacao).background }}
+                      className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-extrabold text-white shadow-lg tracking-wide uppercase"
+                    >
+                      {obterEstiloStatusImc(resultadoImc.classificacao).label}
+                    </span>
+                  </div>
+
+                  <p className="mt-4 text-sm sm:text-base text-zinc-300 max-w-lg mx-auto leading-relaxed">
                     {resultadoImc.recomendacao}
                   </p>
                 </div>
                 <button
                   onClick={abrirLead}
                   style={{ backgroundColor: corPrimaria }}
-                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-lg font-extrabold text-white shadow-lg transition hover:brightness-110 active:scale-98"
+                  className="mt-4 flex w-full min-h-[48px] items-center justify-center gap-2.5 rounded-xl py-4 text-base sm:text-lg font-extrabold text-white shadow-xl shadow-red-950/50 transition-all duration-300 hover:brightness-110 active:scale-[0.98]"
                 >
-                  <MessageCircle className="h-5 w-5" /> Quero minha Aula Experimental
+                  <MessageCircle className="h-5 w-5" /> Quero minha Aula Experimental Gratuita
                 </button>
               </div>
             )}
@@ -685,7 +701,7 @@ export default function SiteInstitucional() {
               <p className="text-sm leading-relaxed text-zinc-400">
                 Sua academia de referência. Transformando vidas através do movimento.
               </p>
-              <div className="mt-5 flex gap-3">
+              <div className="mt-5 flex items-center gap-3">
                 {[
                   {
                     icone: Instagram,
@@ -694,21 +710,44 @@ export default function SiteInstitucional() {
                       ? config.instagram.startsWith('http')
                         ? config.instagram
                         : `https://instagram.com/${config.instagram.replace('@', '')}`
-                      : '#'
+                      : '#',
+                    style: {
+                      background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)'
+                    },
+                    classes: 'shadow-sm shadow-pink-900/30 text-white'
                   },
-                  { icone: Facebook, rotulo: 'Facebook', link: '#' },
-                  { icone: Youtube, rotulo: 'YouTube', link: '#' },
-                  { icone: Clapperboard, rotulo: 'TikTok', link: '#' }
+                  {
+                    icone: Facebook,
+                    rotulo: 'Facebook',
+                    link: '#',
+                    style: { backgroundColor: '#1877F2' },
+                    classes: 'shadow-sm shadow-blue-900/30 text-white'
+                  },
+                  {
+                    icone: Youtube,
+                    rotulo: 'YouTube',
+                    link: '#',
+                    style: { backgroundColor: '#FF0000' },
+                    classes: 'shadow-sm shadow-red-900/30 text-white'
+                  },
+                  {
+                    icone: Clapperboard,
+                    rotulo: 'TikTok',
+                    link: '#',
+                    style: { backgroundColor: '#000000' },
+                    classes: 'border border-[#00F2FE]/50 shadow-[0_0_8px_rgba(254,44,85,0.4)] text-[#00F2FE]'
+                  }
                 ].map((s) => (
                   <a
                     key={s.rotulo}
                     href={s.link}
                     target={s.link !== '#' ? '_blank' : undefined}
                     rel="noreferrer"
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-800 text-zinc-400 transition hover:bg-zinc-700 hover:text-white"
+                    style={s.style}
+                    className={`flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 hover:scale-105 active:scale-95 hover:brightness-110 ${s.classes}`}
                     aria-label={s.rotulo}
                   >
-                    <s.icone className="h-4 w-4" />
+                    <s.icone className="h-5 w-5" />
                   </a>
                 ))}
               </div>
@@ -781,19 +820,21 @@ export default function SiteInstitucional() {
         </div>
       </footer>
 
-      {/* ---------- WhatsApp float pulsante com a cor da marca ---------- */}
+      {/* ---------- WhatsApp float oficial (#25D366) ---------- */}
       <div className="fixed bottom-24 right-4 z-40 md:bottom-6">
         <span
-          className="absolute -inset-1 animate-ping rounded-full opacity-60 pointer-events-none"
-          style={{ backgroundColor: corPrimaria }}
+          className="absolute -inset-1 animate-ping rounded-full opacity-60 pointer-events-none bg-[#25D366]"
         />
         <button
           onClick={abrirLead}
-          style={{ backgroundColor: corPrimaria }}
-          className="relative flex h-14 w-14 items-center justify-center rounded-full text-white shadow-2xl transition-transform duration-300 hover:scale-110 hover:brightness-110 active:scale-95 animate-pulse"
+          style={{
+            backgroundColor: '#25D366',
+            boxShadow: '0 4px 14px rgba(37, 211, 102, 0.4)'
+          }}
+          className="relative flex h-14 w-14 items-center justify-center rounded-full text-white transition-all duration-300 hover:scale-110 hover:brightness-105 active:scale-95 shadow-lg"
           aria-label="Fale conosco pelo WhatsApp"
         >
-          <MessageCircle className="h-7 w-7" />
+          <MessageCircle className="h-7 w-7 text-white fill-white/20" />
         </button>
       </div>
 

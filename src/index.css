@@ -62,3 +62,15 @@ input.bg-zinc-800::placeholder {
 .dark ::-webkit-scrollbar-thumb {
   background: rgb(255 255 255 / 0.18);
 }
+
+/* Efeito Glow interativo nos cards institucionais */
+.card-glow-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card-glow-hover:hover,
+.card-glow-hover:active,
+.card-glow-hover:focus-within {
+  border-color: rgba(229, 9, 20, 0.7) !important;
+  box-shadow: 0 0 16px rgba(229, 9, 20, 0.35), 0 8px 24px rgba(0, 0, 0, 0.45) !important;
+  transform: translateY(-3px);
+}
