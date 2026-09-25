@@ -283,8 +283,7 @@ export default function SiteInstitucional() {
             ))}
             <button
               onClick={abrirLead}
-              style={{ backgroundColor: corPrimaria }}
-              className="rounded-xl px-5 py-2.5 text-sm font-extrabold text-white shadow-lg transition-all duration-300 hover:brightness-110 active:scale-95"
+              className="btn-brand-gradient rounded-xl px-5 py-2.5 text-sm font-extrabold text-white shadow-lg active:scale-95"
             >
               Agende sua Aula
             </button>
@@ -315,8 +314,7 @@ export default function SiteInstitucional() {
             ))}
             <button
               onClick={abrirLead}
-              style={{ backgroundColor: corPrimaria }}
-              className="mt-1 rounded-xl py-3 font-extrabold text-white transition hover:brightness-110 active:scale-95"
+              className="btn-brand-gradient mt-1 rounded-xl py-3 font-extrabold text-white active:scale-95"
             >
               Agende sua Aula Experimental
             </button>
@@ -370,8 +368,7 @@ export default function SiteInstitucional() {
           <div className="flex w-full flex-col sm:flex-row items-center justify-center gap-4 max-w-md sm:max-w-none">
             <button
               onClick={abrirLead}
-              style={{ backgroundColor: corPrimaria }}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-3 rounded-xl px-8 py-4 text-base sm:text-lg font-extrabold text-white shadow-xl shadow-red-950/60 transition-all duration-300 hover:brightness-110 hover:shadow-[0_8px_25px_rgba(220,38,38,0.45)] hover:scale-[1.02] active:scale-[0.98] min-h-[48px]"
+              className="btn-brand-gradient w-full sm:w-auto inline-flex items-center justify-center gap-3 rounded-xl px-8 py-4 text-base sm:text-lg font-extrabold text-white min-h-[48px]"
             >
               <MessageCircle className="h-5 w-5 text-white" /> Agende sua Aula Experimental
             </button>
@@ -645,8 +642,7 @@ export default function SiteInstitucional() {
                 </div>
                 <button
                   onClick={abrirLead}
-                  style={{ backgroundColor: corPrimaria }}
-                  className="mt-4 flex w-full min-h-[48px] items-center justify-center gap-2.5 rounded-xl py-4 text-base sm:text-lg font-extrabold text-white shadow-xl shadow-red-950/50 transition-all duration-300 hover:brightness-110 active:scale-[0.98]"
+                  className="btn-brand-gradient mt-4 flex w-full min-h-[48px] items-center justify-center gap-2.5 rounded-xl py-4 text-base sm:text-lg font-extrabold text-white active:scale-[0.98]"
                 >
                   <MessageCircle className="h-5 w-5" /> Quero minha Aula Experimental Gratuita
                 </button>
@@ -841,55 +837,57 @@ export default function SiteInstitucional() {
       {/* ---------- Modal de lead ---------- */}
       {modalLead && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-md"
           onClick={() => !salvando && setModalLead(false)}
         >
           <div
-            className="w-full max-w-md overflow-hidden rounded-2xl border border-zinc-800 bg-[#111] shadow-2xl"
+            className="modal-lead-card w-full max-w-md overflow-hidden bg-[#121214] text-white"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-zinc-800 px-6 py-4">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <CalendarDays className="h-5 w-5" style={{ color: corSecundaria }} />
+            <div className="flex items-center justify-between border-b border-zinc-800 bg-zinc-900/60 px-6 py-4">
+              <h3 className="text-lg font-extrabold text-white flex items-center gap-2">
+                <CalendarDays className="h-5 w-5 text-red-500" />
                 Agende sua Aula Experimental
               </h3>
               <button
                 onClick={() => setModalLead(false)}
                 disabled={salvando}
-                className="text-zinc-400 transition hover:text-white"
+                className="text-zinc-400 transition hover:text-white p-1 rounded-lg hover:bg-white/10"
                 aria-label="Fechar"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <form onSubmit={enviarLead} className="space-y-4 px-6 py-5">
+            <form onSubmit={enviarLead} className="space-y-4 px-6 py-6">
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-zinc-400">
-                  Seu nome completo
+                <label className="mb-1.5 block text-xs font-bold text-zinc-300 uppercase tracking-wide">
+                  Seu nome completo <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
-                  placeholder="Nome"
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-850 px-4 py-2.5 text-white outline-none transition placeholder:text-zinc-600 focus:border-zinc-500"
+                  placeholder="Ex: Maria da Silva"
+                  required
+                  className="modal-input w-full rounded-xl px-4 py-3 text-sm outline-none transition"
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-zinc-400">
-                  WhatsApp com DDD
+                <label className="mb-1.5 block text-xs font-bold text-zinc-300 uppercase tracking-wide">
+                  WhatsApp com DDD <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="tel"
                   value={telefone}
                   onChange={(e) => setTelefone(e.target.value)}
-                  placeholder="(00) 00000-0000"
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-850 px-4 py-2.5 text-white outline-none transition placeholder:text-zinc-600 focus:border-zinc-500"
+                  placeholder="(18) 99999-9999"
+                  required
+                  className="modal-input w-full rounded-xl px-4 py-3 text-sm outline-none transition"
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-zinc-400">
+                <label className="mb-1.5 block text-xs font-bold text-zinc-300 uppercase tracking-wide">
                   Data preferida (opcional)
                 </label>
                 <input
@@ -897,11 +895,11 @@ export default function SiteInstitucional() {
                   value={data}
                   min={hoje}
                   onChange={(e) => setData(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-850 px-4 py-2.5 text-white outline-none transition [color-scheme:dark] focus:border-zinc-500"
+                  className="modal-input w-full rounded-xl px-4 py-3 text-sm outline-none transition [color-scheme:dark]"
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-zinc-400">
+                <label className="mb-1.5 block text-xs font-bold text-zinc-300 uppercase tracking-wide">
                   Melhor horário (opcional)
                 </label>
                 {carregandoHorarios && (
@@ -917,13 +915,13 @@ export default function SiteInstitucional() {
                         type="button"
                         onClick={() => !ocupado && setHorario(ocupado ? horario : h)}
                         disabled={ocupado}
-                        style={selecionado ? { backgroundColor: corPrimaria, borderColor: corPrimaria } : {}}
+                        style={selecionado ? { backgroundColor: '#E50914', borderColor: '#E50914' } : {}}
                         className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition ${
                           ocupado
                             ? 'cursor-not-allowed border-red-800/40 bg-red-900/20 text-red-500/40 line-through'
                             : selecionado
                               ? 'text-white shadow-md'
-                              : 'border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white'
+                              : 'border-zinc-700 bg-zinc-800/80 text-zinc-300 hover:border-zinc-500 hover:text-white'
                         }`}
                         title={ocupado ? 'Este horário já está agendado' : h}
                       >
@@ -940,19 +938,20 @@ export default function SiteInstitucional() {
                 )}
               </div>
 
-              <button
-                type="submit"
-                disabled={salvando}
-                style={{ backgroundColor: corPrimaria }}
-                className="flex w-full items-center justify-center gap-2 rounded-xl py-3 font-bold text-white shadow-lg transition hover:brightness-110 disabled:opacity-60"
-              >
-                {salvando ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <MessageCircle className="h-5 w-5" />
-                )}
-                Confirmar pelo WhatsApp
-              </button>
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={salvando}
+                  className="btn-whatsapp-confirm flex w-full min-h-[48px] items-center justify-center gap-2.5 rounded-xl py-3.5 text-base font-bold text-white shadow-lg transition disabled:opacity-60"
+                >
+                  {salvando ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <MessageCircle className="h-5 w-5 fill-white/20" />
+                  )}
+                  Confirmar pelo WhatsApp
+                </button>
+              </div>
             </form>
           </div>
         </div>
