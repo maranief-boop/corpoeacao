@@ -73,6 +73,34 @@ alter table public.treinos add column if not exists descanso_padrao integer defa
 create unique index if not exists treinos_aluno_dia_key on public.treinos (aluno_id, dia_semana);
 
 -- ---------------------------------------------------------------------
+-- Tabela: macrociclo (planejamento de 12 semanas / microciclos por aluno)
+-- ---------------------------------------------------------------------
+create table if not exists public.macrociclo (
+  id           uuid primary key default gen_random_uuid(),
+  aluno_id     uuid not null references public.alunos(id) on delete cascade,
+  semanas_json jsonb not null default '[]'::jsonb,
+  updated_at   timestamptz default now(),
+  created_at   timestamptz not null default now(),
+  constraint macrociclo_aluno_id_unique unique (aluno_id)
+);
+
+-- Para bancos onde a tabela já foi criada sem a constraint de unicidade:
+-- Remove eventuais duplicatas antigas mantendo o registro mais recente
+delete from public.macrociclo m1
+where m1.id not in (
+  select m2.id from public.macrociclo m2
+  where m2.aluno_id = m1.aluno_id
+  order by coalesce(m2.updated_at, m2.created_at, now()) desc
+  limit 1
+);
+
+-- Adiciona a constraint de unicidade em aluno_id (necessária para upsert com onConflict)
+alter table public.macrociclo drop constraint if exists macrociclo_aluno_id_unique;
+alter table public.macrociclo add constraint macrociclo_aluno_id_unique unique (aluno_id);
+
+create index if not exists macrociclo_aluno_id_idx on public.macrociclo (aluno_id);
+
+-- ---------------------------------------------------------------------
 -- Tabela: exercicios_base (busca inteligente no cadastro de exercícios)
 -- Categorias de exemplo: Musculação, Funcional, Corrida
 -- ---------------------------------------------------------------------

@@ -88,6 +88,72 @@ export function useMacrociclo() {
       error = retry.error
     }
 
+    // FALLBACK DE RESILIÊNCIA: Se o upsert falhar com HTTP 400 ou erro de ON CONFLICT
+    // (comum quando aluno_id ainda não possui a constraint UNIQUE no PostgreSQL)
+    if (
+      error &&
+      (error.code === '42P10' ||
+        error.status === 400 ||
+        /unique|conflict|on conflict/i.test(error.message || '') ||
+        /constraint/i.test(error.details || ''))
+    ) {
+      console.warn(
+        '[useMacrociclo] onConflict falhou (provável ausência de UNIQUE em aluno_id). Executando mutação defensiva Select + Update/Insert...'
+      )
+
+      try {
+        const { data: existente } = await supabase
+          .from('macrociclo')
+          .select('id')
+          .eq('aluno_id', alunoId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+
+        if (existente?.id) {
+          // Atualiza o registro existente
+          let resUpdate = await supabase
+            .from('macrociclo')
+            .update({ semanas_json: payloadSemanas, updated_at: agora })
+            .eq('id', existente.id)
+            .select()
+            .maybeSingle()
+
+          if (resUpdate.error && /column .*updated_at.* does not exist/i.test(resUpdate.error.message)) {
+            resUpdate = await supabase
+              .from('macrociclo')
+              .update({ semanas_json: payloadSemanas })
+              .eq('id', existente.id)
+              .select()
+              .maybeSingle()
+          }
+
+          data = resUpdate.data
+          error = resUpdate.error
+        } else {
+          // Insere novo registro
+          let resInsert = await supabase
+            .from('macrociclo')
+            .insert({ aluno_id: alunoId, semanas_json: payloadSemanas, updated_at: agora })
+            .select()
+            .maybeSingle()
+
+          if (resInsert.error && /column .*updated_at.* does not exist/i.test(resInsert.error.message)) {
+            resInsert = await supabase
+              .from('macrociclo')
+              .insert({ aluno_id: alunoId, semanas_json: payloadSemanas })
+              .select()
+              .maybeSingle()
+          }
+
+          data = resInsert.data
+          error = resInsert.error
+        }
+      } catch (fallbackErr) {
+        console.warn('[useMacrociclo] Erro no fallback de mutação:', fallbackErr)
+      }
+    }
+
     if (error) {
       // Mensagens amigáveis para orientar o gestor caso a tabela não exista ou permissão RLS
       if (error.code === '42P01' || /relation .*macrociclo.* does not exist/i.test(error.message)) {
